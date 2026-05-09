@@ -7,32 +7,36 @@
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <style>
         body { font-family: -apple-system, sans-serif; background: #F4F4F4; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
-        
-        /* 顶部操作区 */
         .controls { width: 100%; max-width: 400px; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 15px; box-sizing: border-box; }
         select { width: 100%; padding: 12px; border: 1px solid #DDD; border-radius: 8px; font-size: 15px; margin-bottom: 12px; background: #FFF; outline: none; }
         .btn-row { display: flex; gap: 8px; }
-        .btn { flex: 1; padding: 12px; border-radius: 8px; font-weight: bold; text-align: center; cursor: pointer; border: none; font-size: 14px; transition: 0.2s; }
+        .btn { flex: 1; padding: 12px; border-radius: 8px; font-weight: bold; text-align: center; cursor: pointer; border: none; font-size: 14px; }
         .btn-up { background: #EEE; color: #333; border: 1px dashed #AAA; }
         .btn-gen { background: #000; color: #FFF; }
-        .btn:active { opacity: 0.7; }
 
-        /* 海报预览 (严格 3:4) */
+        /* 海报画布 3:4 */
         #poster-wrap { width: 375px; height: 500px; background: #FFF; display: flex; flex-direction: column; overflow: hidden; position: relative; }
         
-        /* 图片区：高度锁定 60%，object-fit 防止拉伸变形 */
+        /* 图片区：锁定 60% 高度 */
         #photo-grid { width: 100%; height: 60%; display: grid; gap: 2px; background: #EEE; overflow: hidden; }
-        .grid-img { width: 100%; height: 100%; object-fit: cover; display: block; } /* 关键：cover 防止变形 */
+        
+        /* 核心修复：使用 div 的背景图模式替代 img 标签，防止 html2canvas 拉伸变形 */
+        .photo-cell { 
+            width: 100%; height: 100%; 
+            background-position: center; 
+            background-size: cover; 
+            background-repeat: no-repeat;
+        }
 
-        /* 文字区：高度锁定 40%，严格按表格字段 */
+        /* 文字区：锁定 40% 高度 */
         .text-section { width: 100%; height: 40%; padding: 15px 20px; box-sizing: border-box; display: flex; flex-direction: column; background: #FFF; border-top: 1px solid #EEE; position: relative; z-index: 10; }
-        .car-title { font-size: 20px; font-weight: 900; border-bottom: 3px solid #000; margin-bottom: 10px; width: fit-content; line-height: 1.2; letter-spacing: -0.5px; }
+        .car-title { font-size: 20px; font-weight: 900; border-bottom: 3px solid #000; margin-bottom: 10px; width: fit-content; line-height: 1.2; }
         .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .info-item b { font-size: 9px; color: #AAA; display: block; margin-bottom: 2px; letter-spacing: 0.5px; }
+        .info-item b { font-size: 9px; color: #AAA; display: block; margin-bottom: 2px; }
         .info-item span { font-size: 10px; line-height: 1.35; color: #333; font-weight: 600; display: block; word-break: break-all; }
         .footer { margin-top: auto; border-top: 1px solid #F5F5F5; padding-top: 5px; font-size: 8px; color: #CCC; display: flex; justify-content: space-between; font-weight: bold; }
 
-        /* 下载生成区域 */
+        /* 保存区 */
         #result-area { margin-top: 20px; display: none; width: 100%; max-width: 375px; text-align: center; padding-bottom: 40px; }
         #result-img { width: 100%; border-radius: 8px; box-shadow: 0 4px 25px rgba(0,0,0,0.2); margin-top: 10px; border: 2px solid #FFF; }
         .tip { font-size: 14px; color: #E74C3C; font-weight: bold; background: #FFEAEA; padding: 10px; border-radius: 6px; }
@@ -98,8 +102,7 @@
         const sel = document.getElementById('carSelect');
         carData.forEach((item, index) => {
             let opt = document.createElement('option');
-            opt.value = index;
-            opt.textContent = item.id;
+            opt.value = index; opt.textContent = item.id;
             sel.appendChild(opt);
         });
 
@@ -118,16 +121,17 @@
             const grid = document.getElementById('photo-grid');
             grid.innerHTML = '';
             const cnt = files.length;
-            // 响应式宫格布局
             grid.style.gridTemplateColumns = cnt >= 3 ? '1.5fr 1fr' : (cnt === 2 ? '1fr 1fr' : '1fr');
+            
             files.slice(0, 3).forEach((file, i) => {
                 const r = new FileReader();
                 r.onload = (e) => {
-                    const img = document.createElement('img');
-                    img.src = e.target.result;
-                    img.className = 'grid-img';
-                    if(cnt >= 3 && i === 0) img.style.gridRow = 'span 2';
-                    grid.appendChild(img);
+                    const cell = document.createElement('div');
+                    cell.className = 'photo-cell';
+                    // 关键修复点：使用背景图，html2canvas 对背景图的裁切还原度远高于 img 标签
+                    cell.style.backgroundImage = `url(${e.target.result})`;
+                    if(cnt >= 3 && i === 0) cell.style.gridRow = 'span 2';
+                    grid.appendChild(cell);
                 };
                 r.readAsDataURL(file);
             });
@@ -139,13 +143,13 @@
             const resImg = document.getElementById('result-img');
             
             html2canvas(document.getElementById('poster-wrap'), { 
-                scale: 3, // 高清 3 倍采样
+                scale: 3, 
                 useCORS: true,
+                logging: false,
                 backgroundColor: "#FFFFFF"
             }).then(canvas => {
                 resImg.src = canvas.toDataURL("image/png");
                 resArea.style.display = "block";
-                // 自动滑动到结果区，提示用户长按
                 window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
             });
         }
