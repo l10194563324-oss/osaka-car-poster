@@ -3,78 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>大阪租车海报生成器</title>
+    <title>大阪租车 · 官方海报工厂</title>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <style>
-        body { font-family: -apple-system, "Helvetica Neue", sans-serif; background: #f0f2f5; margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; }
+        body { font-family: -apple-system, "PingFang SC", sans-serif; background: #F4F4F4; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
         
-        /* 操控面板 */
-        .config-panel { width: 100%; max-width: 400px; background: #fff; padding: 15px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; box-sizing: border-box; }
-        .config-label { font-size: 13px; color: #666; margin-bottom: 8px; font-weight: bold; display: block; }
-        select { width: 100%; padding: 14px; border: 1px solid #ddd; border-radius: 10px; font-size: 15px; margin-bottom: 15px; background: #fff; }
-        .button-group { display: flex; gap: 10px; }
-        .btn { flex: 1; padding: 14px; border-radius: 10px; font-weight: bold; border: none; font-size: 14px; cursor: pointer; transition: 0.3s; }
-        .btn-upload { background: #f8f9fa; color: #333; border: 1px dashed #adb5bd; }
-        .btn-generate { background: #000; color: #fff; }
+        /* 控制区 */
+        .controls { width: 100%; max-width: 400px; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 15px; box-sizing: border-box; }
+        select { width: 100%; padding: 12px; border: 1px solid #DDD; border-radius: 8px; font-size: 15px; margin-bottom: 12px; background: #FFF; }
+        .btn-row { display: flex; gap: 8px; }
+        .btn { flex: 1; padding: 12px; border-radius: 8px; font-weight: bold; text-align: center; cursor: pointer; border: none; font-size: 14px; }
+        .btn-up { background: #EEE; color: #333; }
+        .btn-gen { background: #000; color: #FFF; }
 
-        /* 海报预览核心容器 - 严格 3:4 */
-        #poster-canvas { width: 375px; height: 500px; background: #fff; display: flex; flex-direction: column; position: relative; overflow: hidden; }
+        /* 海报预览 (3:4) */
+        #poster-wrap { width: 375px; height: 500px; background: #FFF; display: flex; flex-direction: column; overflow: hidden; position: relative; }
         
-        /* 图片区域 - 锁定 60% 高度 */
-        .photo-area { width: 100%; height: 60%; background: #eee; display: grid; gap: 2px; overflow: hidden; pointer-events: none; }
+        /* 拼图区 (锁定高度 60%) */
+        #photo-grid { width: 100%; height: 60%; display: grid; gap: 2px; background: #EEE; overflow: hidden; }
         .grid-img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* 文字区域 - 锁定 40% 高度 - 绝对不被遮挡 */
-        .info-area { width: 100%; height: 40%; background: #fff; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; z-index: 99; border-top: 1px solid #eee; }
-        .car-name { font-size: 22px; font-weight: 900; border-bottom: 3.5px solid #000; margin-bottom: 15px; width: fit-content; text-transform: uppercase; line-height: 1.1; }
-        .data-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .data-item b { font-size: 10px; color: #999; display: block; margin-bottom: 2px; letter-spacing: 0.5px; }
-        .data-item span { font-size: 11px; line-height: 1.4; color: #333; font-weight: 600; display: block; }
-        .footer-bar { margin-top: auto; border-top: 1px solid #f0f0f0; padding-top: 8px; font-size: 8.5px; color: #ccc; display: flex; justify-content: space-between; font-weight: bold; }
+        /* 文字区 (锁定高度 40%) - 严格对齐表格字段 */
+        .text-section { width: 100%; height: 40%; padding: 15px 20px; box-sizing: border-box; display: flex; flex-direction: column; background: #FFF; border-top: 1px solid #EEE; z-index: 10; }
+        .car-title { font-size: 18px; font-weight: 900; border-bottom: 3px solid #000; margin-bottom: 10px; width: fit-content; line-height: 1.2; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .info-item b { font-size: 9px; color: #AAA; display: block; margin-bottom: 2px; }
+        .info-item span { font-size: 10px; line-height: 1.3; color: #333; font-weight: 600; display: block; word-break: break-all; }
+        .footer { margin-top: auto; border-top: 1px solid #F5F5F5; padding-top: 5px; font-size: 8px; color: #CCC; display: flex; justify-content: space-between; font-weight: bold; }
 
-        /* 生成结果显示（用于手机长按下载） */
-        #output-overlay { display: none; margin-top: 20px; width: 100%; max-width: 375px; text-align: center; }
-        #output-img { width: 100%; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.3); border: 4px solid white; }
-        .save-hint { color: #ff4757; font-weight: bold; font-size: 14px; margin-bottom: 10px; }
+        /* 下载辅助区 */
+        #result-area { margin-top: 20px; display: none; width: 100%; max-width: 375px; text-align: center; }
+        #result-img { width: 100%; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+        .tip { font-size: 13px; color: #E74C3C; font-weight: bold; margin-bottom: 8px; }
     </style>
 </head>
 <body>
 
-    <div class="config-panel">
-        <label class="config-label">1. 选择车型 (严格对齐表格)</label>
-        <select id="vehicleSelector" onchange="applyVehicleData()">
-            <option value="">-- 请点击此处选择车型 --</option>
+    <div class="controls">
+        <select id="carSelect" onchange="updateUI()">
+            <option value="">-- 请选择车型 --</option>
         </select>
-
-        <div class="button-group">
-            <div class="btn btn-upload" onclick="document.getElementById('inputFiles').click()">📸 上传照片</div>
-            <div class="btn btn-generate" onclick="renderPoster()">✨ 生成海报</div>
+        <div class="btn-row">
+            <div class="btn btn-up" onclick="document.getElementById('fileIn').click()">📸 上传照片</div>
+            <div class="btn btn-gen" onclick="generatePoster()">✨ 生成海报</div>
         </div>
-        <input type="file" id="inputFiles" multiple accept="image/*" style="display:none" onchange="renderPhotos(this)">
+        <input type="file" id="fileIn" multiple accept="image/*" style="display:none" onchange="loadPhotos(this)">
     </div>
 
-    <div id="poster-canvas">
-        <div class="photo-area" id="photoGrid"></div>
-        <div class="info-area">
-            <div class="car-name" id="labelTitle">MODEL</div>
-            <div class="data-grid">
-                <div class="data-item"><b>载人数量 / GUESTS</b><span id="labelP">-</span></div>
-                <div class="data-item"><b>动力与性能特点 / POWER</b><span id="labelL">-</span></div>
-                <div class="data-item"><b>行李装载能力 / CARGO</b><span id="labelC">-</span></div>
-                <div class="data-item"><b>备注 / REMARK</b><span id="labelD">-</span></div>
+    <div id="poster-wrap">
+        <div id="photo-grid"></div>
+        <div class="text-section">
+            <div class="car-title" id="outTitle">SELECT MODEL</div>
+            <div class="info-grid">
+                <div class="info-item"><b>载人数量 / GUESTS</b><span id="outP">-</span></div>
+                <div class="info-item"><b>动力与性能特点 / FEATURES</b><span id="outL">-</span></div>
+                <div class="info-item"><b>行李装载能力 / CARGO</b><span id="outC">-</span></div>
+                <div class="info-item"><b>备注 / REMARK</b><span id="outD">-</span></div>
             </div>
-            <div class="footer-bar"><span>PREMIUM RENTAL OSAKA</span><span>KANSAI DRIVE 2026</span></div>
+            <div class="footer"><span>PREMIUM RENTAL OSAKA</span><span>KANSAI DRIVE 2026</span></div>
         </div>
     </div>
 
-    <div id="output-overlay">
-        <div class="save-hint">海报已生成！请长按图片保存到手机</div>
-        <img id="output-img" src="" alt="请长按保存">
+    <div id="result-area">
+        <div class="tip">海报已生成！请长按下方图片保存到手机</div>
+        <img id="result-img" src="">
     </div>
 
     <script>
-        // 严格按照您的 CSV 数据录入
-        const carSource = [
+        // 严格按照表格内容逐字录入
+        const carData = [
             {id:"SUBARU IMPREZA", p:"2-4人", l:"2.0L 水平对置引擎，全时四驱，抓地力极强。", c:"28寸×1 + 24寸×1", d:"适合追求驾驶稳定性的用户，雨雪天气表现优秀。"},
             {id:"HONDA FIT", p:"2-3人", l:"1.5L 动力，空间魔术师，视野好，市区穿梭灵活。", c:"24寸×2 + 20寸×2", d:"同级别空间利用率最高，后排座椅可向上折叠。"},
             {id:"TOYOTA AQUA", p:"2人", l:"1.5L 混动，极其省油，转向半径小，好停车。", c:"24寸×2 或 20寸×3", d:"适合 2 人深度游，后排坐人后行李空间较局促。"},
@@ -97,62 +94,55 @@
             {id:"BMW X5", p:"4-5人", l:"3.0T 动力，公路王者，四驱系统应对复杂路况。", c:"28寸×3", d:"空间宽敞，适合长途跨城及山路驾驶。"}
         ];
 
-        const selector = document.getElementById('vehicleSelector');
-        carSource.forEach((car, index) => {
-            const opt = document.createElement('option');
+        const sel = document.getElementById('carSelect');
+        carData.forEach((item, index) => {
+            let opt = document.createElement('option');
             opt.value = index;
-            opt.textContent = car.id;
-            selector.appendChild(opt);
+            opt.textContent = item.id;
+            sel.appendChild(opt);
         });
 
-        function applyVehicleData() {
-            const car = carSource[selector.value];
-            if (!car) return;
-            document.getElementById('labelTitle').innerText = car.id;
-            document.getElementById('labelP').innerText = car.p;
-            document.getElementById('labelL').innerText = car.l;
-            document.getElementById('labelC').innerText = car.c;
-            document.getElementById('labelD').innerText = car.d;
+        function updateUI() {
+            const data = carData[sel.value];
+            if (!data) return;
+            document.getElementById('outTitle').innerText = data.id;
+            document.getElementById('outP').innerText = data.p;
+            document.getElementById('outL').innerText = data.l;
+            document.getElementById('outC').innerText = data.c;
+            document.getElementById('outD').innerText = data.d;
         }
 
-        function renderPhotos(input) {
+        function loadPhotos(input) {
             const files = Array.from(input.files);
-            const grid = document.getElementById('photoGrid');
+            const grid = document.getElementById('photo-grid');
             grid.innerHTML = '';
-            const count = files.length;
-            
-            // 响应式拼图样式
-            grid.style.gridTemplateColumns = count >= 3 ? '1.6fr 1fr' : (count === 2 ? '1fr 1fr' : '1fr');
-            
+            const cnt = files.length;
+            grid.style.gridTemplateColumns = cnt >= 3 ? '1.5fr 1fr' : (cnt === 2 ? '1fr 1fr' : '1fr');
             files.slice(0, 3).forEach((file, i) => {
-                const reader = new FileReader();
-                reader.onload = (e) => {
+                const r = new FileReader();
+                r.onload = (e) => {
                     const img = document.createElement('img');
                     img.src = e.target.result;
                     img.className = 'grid-img';
-                    if(count >= 3 && i === 0) img.style.gridRow = 'span 2';
+                    if(cnt >= 3 && i === 0) img.style.gridRow = 'span 2';
                     grid.appendChild(img);
                 };
-                reader.readAsDataURL(file);
+                r.readAsDataURL(file);
             });
         }
 
-        function renderPoster() {
-            if(!selector.value) { alert("请先选择车型！"); return; }
-            const overlay = document.getElementById('output-overlay');
-            const outImg = document.getElementById('output-img');
-            
-            // 使用 html2canvas 将预览区转为图片
-            html2canvas(document.getElementById('poster-canvas'), {
-                scale: 3, // 高清导出
+        function generatePoster() {
+            if(!sel.value) { alert("请先选择车型"); return; }
+            html2canvas(document.getElementById('poster-wrap'), { 
+                scale: 3, 
                 useCORS: true,
-                logging: false,
-                backgroundColor: "#ffffff"
+                backgroundColor: "#FFFFFF"
             }).then(canvas => {
-                outImg.src = canvas.toDataURL("image/png");
-                overlay.style.display = "block";
-                // 自动平滑滚动到生成的图片位置
-                overlay.scrollIntoView({ behavior: 'smooth' });
+                const resArea = document.getElementById('result-area');
+                const resImg = document.getElementById('result-img');
+                resImg.src = canvas.toDataURL("image/png");
+                resArea.style.display = "block";
+                window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
             });
         }
     </script>
