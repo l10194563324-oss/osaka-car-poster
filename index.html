@@ -6,35 +6,36 @@
     <title>大阪租车 · 官方海报工厂</title>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <style>
-        body { font-family: -apple-system, "PingFang SC", sans-serif; background: #F4F4F4; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
+        body { font-family: -apple-system, sans-serif; background: #F4F4F4; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
         
-        /* 控制区 */
+        /* 顶部操作区 */
         .controls { width: 100%; max-width: 400px; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 15px; box-sizing: border-box; }
-        select { width: 100%; padding: 12px; border: 1px solid #DDD; border-radius: 8px; font-size: 15px; margin-bottom: 12px; background: #FFF; }
+        select { width: 100%; padding: 12px; border: 1px solid #DDD; border-radius: 8px; font-size: 15px; margin-bottom: 12px; background: #FFF; outline: none; }
         .btn-row { display: flex; gap: 8px; }
-        .btn { flex: 1; padding: 12px; border-radius: 8px; font-weight: bold; text-align: center; cursor: pointer; border: none; font-size: 14px; }
-        .btn-up { background: #EEE; color: #333; }
+        .btn { flex: 1; padding: 12px; border-radius: 8px; font-weight: bold; text-align: center; cursor: pointer; border: none; font-size: 14px; transition: 0.2s; }
+        .btn-up { background: #EEE; color: #333; border: 1px dashed #AAA; }
         .btn-gen { background: #000; color: #FFF; }
+        .btn:active { opacity: 0.7; }
 
-        /* 海报预览 (3:4) */
+        /* 海报预览 (严格 3:4) */
         #poster-wrap { width: 375px; height: 500px; background: #FFF; display: flex; flex-direction: column; overflow: hidden; position: relative; }
         
-        /* 拼图区 (锁定高度 60%) */
+        /* 图片区：高度锁定 60%，object-fit 防止拉伸变形 */
         #photo-grid { width: 100%; height: 60%; display: grid; gap: 2px; background: #EEE; overflow: hidden; }
-        .grid-img { width: 100%; height: 100%; object-fit: cover; }
+        .grid-img { width: 100%; height: 100%; object-fit: cover; display: block; } /* 关键：cover 防止变形 */
 
-        /* 文字区 (锁定高度 40%) - 严格对齐表格字段 */
-        .text-section { width: 100%; height: 40%; padding: 15px 20px; box-sizing: border-box; display: flex; flex-direction: column; background: #FFF; border-top: 1px solid #EEE; z-index: 10; }
-        .car-title { font-size: 18px; font-weight: 900; border-bottom: 3px solid #000; margin-bottom: 10px; width: fit-content; line-height: 1.2; }
+        /* 文字区：高度锁定 40%，严格按表格字段 */
+        .text-section { width: 100%; height: 40%; padding: 15px 20px; box-sizing: border-box; display: flex; flex-direction: column; background: #FFF; border-top: 1px solid #EEE; position: relative; z-index: 10; }
+        .car-title { font-size: 20px; font-weight: 900; border-bottom: 3px solid #000; margin-bottom: 10px; width: fit-content; line-height: 1.2; letter-spacing: -0.5px; }
         .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .info-item b { font-size: 9px; color: #AAA; display: block; margin-bottom: 2px; }
-        .info-item span { font-size: 10px; line-height: 1.3; color: #333; font-weight: 600; display: block; word-break: break-all; }
+        .info-item b { font-size: 9px; color: #AAA; display: block; margin-bottom: 2px; letter-spacing: 0.5px; }
+        .info-item span { font-size: 10px; line-height: 1.35; color: #333; font-weight: 600; display: block; word-break: break-all; }
         .footer { margin-top: auto; border-top: 1px solid #F5F5F5; padding-top: 5px; font-size: 8px; color: #CCC; display: flex; justify-content: space-between; font-weight: bold; }
 
-        /* 下载辅助区 */
-        #result-area { margin-top: 20px; display: none; width: 100%; max-width: 375px; text-align: center; }
-        #result-img { width: 100%; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
-        .tip { font-size: 13px; color: #E74C3C; font-weight: bold; margin-bottom: 8px; }
+        /* 下载生成区域 */
+        #result-area { margin-top: 20px; display: none; width: 100%; max-width: 375px; text-align: center; padding-bottom: 40px; }
+        #result-img { width: 100%; border-radius: 8px; box-shadow: 0 4px 25px rgba(0,0,0,0.2); margin-top: 10px; border: 2px solid #FFF; }
+        .tip { font-size: 14px; color: #E74C3C; font-weight: bold; background: #FFEAEA; padding: 10px; border-radius: 6px; }
     </style>
 </head>
 <body>
@@ -65,12 +66,12 @@
     </div>
 
     <div id="result-area">
-        <div class="tip">海报已生成！请长按下方图片保存到手机</div>
+        <div class="tip">海报已就绪！请长按下方图片保存</div>
         <img id="result-img" src="">
     </div>
 
     <script>
-        // 严格按照表格内容逐字录入
+        // 严格按照表格 CSV 内容 100% 录入
         const carData = [
             {id:"SUBARU IMPREZA", p:"2-4人", l:"2.0L 水平对置引擎，全时四驱，抓地力极强。", c:"28寸×1 + 24寸×1", d:"适合追求驾驶稳定性的用户，雨雪天气表现优秀。"},
             {id:"HONDA FIT", p:"2-3人", l:"1.5L 动力，空间魔术师，视野好，市区穿梭灵活。", c:"24寸×2 + 20寸×2", d:"同级别空间利用率最高，后排座椅可向上折叠。"},
@@ -103,13 +104,13 @@
         });
 
         function updateUI() {
-            const data = carData[sel.value];
-            if (!data) return;
-            document.getElementById('outTitle').innerText = data.id;
-            document.getElementById('outP').innerText = data.p;
-            document.getElementById('outL').innerText = data.l;
-            document.getElementById('outC').innerText = data.c;
-            document.getElementById('outD').innerText = data.d;
+            const d = carData[sel.value];
+            if (!d) return;
+            document.getElementById('outTitle').innerText = d.id;
+            document.getElementById('outP').innerText = d.p;
+            document.getElementById('outL').innerText = d.l;
+            document.getElementById('outC').innerText = d.c;
+            document.getElementById('outD').innerText = d.d;
         }
 
         function loadPhotos(input) {
@@ -117,6 +118,7 @@
             const grid = document.getElementById('photo-grid');
             grid.innerHTML = '';
             const cnt = files.length;
+            // 响应式宫格布局
             grid.style.gridTemplateColumns = cnt >= 3 ? '1.5fr 1fr' : (cnt === 2 ? '1fr 1fr' : '1fr');
             files.slice(0, 3).forEach((file, i) => {
                 const r = new FileReader();
@@ -133,15 +135,17 @@
 
         function generatePoster() {
             if(!sel.value) { alert("请先选择车型"); return; }
+            const resArea = document.getElementById('result-area');
+            const resImg = document.getElementById('result-img');
+            
             html2canvas(document.getElementById('poster-wrap'), { 
-                scale: 3, 
+                scale: 3, // 高清 3 倍采样
                 useCORS: true,
                 backgroundColor: "#FFFFFF"
             }).then(canvas => {
-                const resArea = document.getElementById('result-area');
-                const resImg = document.getElementById('result-img');
                 resImg.src = canvas.toDataURL("image/png");
                 resArea.style.display = "block";
+                // 自动滑动到结果区，提示用户长按
                 window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
             });
         }
