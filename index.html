@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>大阪租车 · 官方海报工厂</title>
+    <title>大阪租车 · 官方超清海报工厂</title>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <style>
-        body { font-family: -apple-system, sans-serif; background: #F4F4F4; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
+        body { font-family: -apple-system, "PingFang SC", sans-serif; background: #F4F4F4; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
         .controls { width: 100%; max-width: 400px; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 15px; box-sizing: border-box; }
         select { width: 100%; padding: 12px; border: 1px solid #DDD; border-radius: 8px; font-size: 15px; margin-bottom: 12px; background: #FFF; outline: none; }
         .btn-row { display: flex; gap: 8px; }
@@ -14,31 +14,24 @@
         .btn-up { background: #EEE; color: #333; border: 1px dashed #AAA; }
         .btn-gen { background: #000; color: #FFF; }
 
-        /* 海报画布 3:4 */
+        /* 海报画布 3:4 - 预览尺寸 */
         #poster-wrap { width: 375px; height: 500px; background: #FFF; display: flex; flex-direction: column; overflow: hidden; position: relative; }
         
         /* 图片区：锁定 60% 高度 */
-        #photo-grid { width: 100%; height: 60%; display: grid; gap: 2px; background: #EEE; overflow: hidden; }
-        
-        /* 核心修复：使用 div 的背景图模式替代 img 标签，防止 html2canvas 拉伸变形 */
-        .photo-cell { 
-            width: 100%; height: 100%; 
-            background-position: center; 
-            background-size: cover; 
-            background-repeat: no-repeat;
-        }
+        #photo-grid { width: 100%; height: 60%; display: grid; gap: 2px; background: #FFF; overflow: hidden; }
+        .photo-cell { width: 100%; height: 100%; background-position: center; background-size: cover; background-repeat: no-repeat; }
 
-        /* 文字区：锁定 40% 高度 */
-        .text-section { width: 100%; height: 40%; padding: 15px 20px; box-sizing: border-box; display: flex; flex-direction: column; background: #FFF; border-top: 1px solid #EEE; position: relative; z-index: 10; }
-        .car-title { font-size: 20px; font-weight: 900; border-bottom: 3px solid #000; margin-bottom: 10px; width: fit-content; line-height: 1.2; }
+        /* 文字区：锁定 40% 高度 - 增加字体平滑度 */
+        .text-section { width: 100%; height: 40%; padding: 15px 20px; box-sizing: border-box; display: flex; flex-direction: column; background: #FFF; border-top: 1px solid #EEE; z-index: 10; -webkit-font-smoothing: antialiased; }
+        .car-title { font-size: 20px; font-weight: 900; border-bottom: 3px solid #000; margin-bottom: 10px; width: fit-content; line-height: 1.2; color: #000; }
         .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .info-item b { font-size: 9px; color: #AAA; display: block; margin-bottom: 2px; }
+        .info-item b { font-size: 9px; color: #999; display: block; margin-bottom: 2px; letter-spacing: 0.5px; }
         .info-item span { font-size: 10px; line-height: 1.35; color: #333; font-weight: 600; display: block; word-break: break-all; }
         .footer { margin-top: auto; border-top: 1px solid #F5F5F5; padding-top: 5px; font-size: 8px; color: #CCC; display: flex; justify-content: space-between; font-weight: bold; }
 
-        /* 保存区 */
+        /* 超清结果显示区 */
         #result-area { margin-top: 20px; display: none; width: 100%; max-width: 375px; text-align: center; padding-bottom: 40px; }
-        #result-img { width: 100%; border-radius: 8px; box-shadow: 0 4px 25px rgba(0,0,0,0.2); margin-top: 10px; border: 2px solid #FFF; }
+        #result-img { width: 100%; border-radius: 8px; box-shadow: 0 4px 30px rgba(0,0,0,0.2); margin-top: 10px; border: 2px solid #FFF; }
         .tip { font-size: 14px; color: #E74C3C; font-weight: bold; background: #FFEAEA; padding: 10px; border-radius: 6px; }
     </style>
 </head>
@@ -50,7 +43,7 @@
         </select>
         <div class="btn-row">
             <div class="btn btn-up" onclick="document.getElementById('fileIn').click()">📸 上传照片</div>
-            <div class="btn btn-gen" onclick="generatePoster()">✨ 生成海报</div>
+            <div class="btn btn-gen" onclick="generatePoster()">✨ 生成超清海报</div>
         </div>
         <input type="file" id="fileIn" multiple accept="image/*" style="display:none" onchange="loadPhotos(this)">
     </div>
@@ -70,7 +63,7 @@
     </div>
 
     <div id="result-area">
-        <div class="tip">海报已就绪！请长按下方图片保存</div>
+        <div class="tip">✨ 超清海报已生成！请长按图片保存</div>
         <img id="result-img" src="">
     </div>
 
@@ -128,7 +121,6 @@
                 r.onload = (e) => {
                     const cell = document.createElement('div');
                     cell.className = 'photo-cell';
-                    // 关键修复点：使用背景图，html2canvas 对背景图的裁切还原度远高于 img 标签
                     cell.style.backgroundImage = `url(${e.target.result})`;
                     if(cnt >= 3 && i === 0) cell.style.gridRow = 'span 2';
                     grid.appendChild(cell);
@@ -142,13 +134,15 @@
             const resArea = document.getElementById('result-area');
             const resImg = document.getElementById('result-img');
             
+            // 终极画质参数
             html2canvas(document.getElementById('poster-wrap'), { 
-                scale: 3, 
+                scale: 4, // 4 倍超采样，解决模糊问题
                 useCORS: true,
-                logging: false,
+                dpi: 300, // 印刷级 DPI
+                letterRendering: true, // 增强文字边缘
                 backgroundColor: "#FFFFFF"
             }).then(canvas => {
-                resImg.src = canvas.toDataURL("image/png");
+                resImg.src = canvas.toDataURL("image/png", 1.0); // 1.0 质量，无损压缩
                 resArea.style.display = "block";
                 window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
             });
