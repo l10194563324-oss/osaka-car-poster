@@ -3,48 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>大阪租車 · 高清海報工坊</title>
+    <title>大阪租车 · 官方海报工厂</title>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <style>
-        body { font-family: -apple-system, sans-serif; background: #F4F4F4; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
-        .controls { width: 100%; max-width: 400px; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 15px; box-sizing: border-box; }
-        select { width: 100%; padding: 12px; border: 1px solid #DDD; border-radius: 8px; font-size: 15px; margin-bottom: 12px; background: #FFF; outline: none; -webkit-appearance: none; }
+        body { font-family: -apple-system, sans-serif; background: #F0F0F0; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
+        
+        /* UI 操作区 */
+        .controls { width: 100%; max-width: 400px; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-bottom: 15px; box-sizing: border-box; }
+        select { width: 100%; padding: 12px; border: 1px solid #DDD; border-radius: 8px; font-size: 15px; margin-bottom: 12px; background: #FFF; outline: none; }
         .btn-row { display: flex; gap: 8px; }
         .btn { flex: 1; padding: 12px; border-radius: 8px; font-weight: bold; text-align: center; cursor: pointer; border: none; font-size: 14px; }
-        .btn-up { background: #EEE; color: #333; }
-        .btn-gen { background: #000; color: #FFF; }
+        .btn-up { background: #E9E9E9; color: #333; }
+        .btn-dl { background: #000; color: #FFF; }
 
-        /* 海報主體 3:4 */
-        #poster-wrap { width: 375px; height: 500px; background: #FFF; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+        /* 海报画布 (3:4) */
+        #poster-wrap { 
+            width: 375px; height: 500px; background: #FFF; 
+            display: flex; flex-direction: column; overflow: hidden; 
+            position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
         
-        /* 圖片區 - 修復失真關鍵 */
+        /* 拼图区 - 保持比例不拉伸 */
         #photo-grid { width: 100%; height: 60%; display: grid; gap: 1px; background: #FFF; overflow: hidden; }
-        .photo-box { width: 100%; height: 100%; position: relative; overflow: hidden; }
-        .grid-img { width: 100%; height: 100%; object-fit: cover; display: block; image-rendering: -webkit-optimize-contrast; }
+        .grid-img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
-        /* 文字區 - 100% 還原表格內容 */
-        .text-section { width: 100%; height: 40%; padding: 18px 22px; box-sizing: border-box; display: flex; flex-direction: column; background: #FFF; border-top: 1px solid #EEE; position: relative; }
+        /* 文字区 - 严格对应表格 */
+        .text-section { width: 100%; height: 40%; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; background: #FFF; border-top: 1px solid #EEE; position: relative; }
         .car-title { font-size: 21px; font-weight: 900; border-bottom: 3.5px solid #000; margin-bottom: 12px; width: fit-content; line-height: 1.1; color: #000; }
         .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .info-item b { font-size: 9px; color: #999; display: block; margin-bottom: 3px; letter-spacing: 0.5px; }
-        .info-item span { font-size: 10px; line-height: 1.4; color: #333; font-weight: 600; display: block; word-break: break-all; }
+        .info-item b { font-size: 9px; color: #AAA; display: block; margin-bottom: 3px; letter-spacing: 0.5px; }
+        .info-item span { font-size: 10.5px; line-height: 1.4; color: #333; font-weight: 600; display: block; word-break: break-all; }
         .footer { margin-top: auto; border-top: 1px solid #F5F5F5; padding-top: 6px; font-size: 8.5px; color: #CCC; display: flex; justify-content: space-between; font-weight: bold; }
-
-        /* 保存區 */
-        #result-area { margin-top: 20px; display: none; width: 100%; max-width: 375px; text-align: center; padding-bottom: 50px; }
-        #result-img { width: 100%; border-radius: 8px; box-shadow: 0 4px 30px rgba(0,0,0,0.2); margin-top: 10px; border: 2px solid #FFF; }
-        .tip { font-size: 14px; color: #E74C3C; font-weight: bold; background: #FFEAEA; padding: 12px; border-radius: 8px; }
     </style>
 </head>
 <body>
 
     <div class="controls">
         <select id="carSelect" onchange="updateUI()">
-            <option value="">-- 請選擇車型 (20款在庫) --</option>
+            <option value="">-- 请选择车型 (20款在庫) --</option>
         </select>
         <div class="btn-row">
-            <div class="btn btn-up" onclick="document.getElementById('fileIn').click()">📸 上傳照片</div>
-            <div class="btn btn-gen" onclick="generatePoster()">✨ 生成高清海報</div>
+            <div class="btn btn-up" onclick="document.getElementById('fileIn').click()">📸 上传实拍图</div>
+            <div class="btn btn-dl" id="downloadBtn" onclick="downloadPoster()">💾 点击下载海报</div>
         </div>
         <input type="file" id="fileIn" multiple accept="image/*" style="display:none" onchange="loadPhotos(this)">
     </div>
@@ -54,42 +54,38 @@
         <div class="text-section">
             <div class="car-title" id="outTitle">SELECT MODEL</div>
             <div class="info-grid">
-                <div class="info-item"><b>載人數量 / GUESTS</b><span id="outP">-</span></div>
-                <div class="info-item"><b>動力與性能特點 / FEATURES</b><span id="outL">-</span></div>
-                <div class="info-item"><b>行李裝載能力 / CARGO</b><span id="outC">-</span></div>
-                <div class="info-item"><b>備註 / REMARK</b><span id="outD">-</span></div>
+                <div class="info-item"><b>建议人数 / GUESTS</b><span id="outP">-</span></div>
+                <div class="info-item"><b>性能特点 / FEATURES</b><span id="outL">-</span></div>
+                <div class="info-item"><b>载物能力 / CARGO</b><span id="outC">-</span></div>
+                <div class="info-item"><b>备注说明 / REMARK</b><span id="outD">-</span></div>
             </div>
             <div class="footer"><span>PREMIUM RENTAL OSAKA</span><span>KANSAI DRIVE 2026</span></div>
         </div>
     </div>
 
-    <div id="result-area">
-        <div class="tip">✨ 已完成！請長按下方圖片儲存 ✨</div>
-        <img id="result-img" src="">
-    </div>
-
     <script>
+        // 严格按照您的 CSV 表格录入 20 辆车
         const carData = [
-            {id:"SUBARU IMPREZA", p:"2-4人", l:"2.0L 水平對置引擎，全時四驅，抓地力極強。", c:"28寸×1 + 24寸×1", d:"適合追求駕駛穩定性的用戶，雨雪天氣表現優秀。"},
-            {id:"HONDA FIT", p:"2-3人", l:"1.5L 動力，空間魔術師，視野好，市區穿梭靈活。", c:"24寸×2 + 20寸×2", d:"同級別空間利用率最高，後排座椅可向上折疊。"},
-            {id:"TOYOTA AQUA", p:"2人", l:"1.5L 混動，極其省油，轉向半徑小，好停車。", c:"24寸×2 或 20寸×3", d:"適合 2 人深度遊，後排坐人後行李空間較局促。"},
-            {id:"TOYOTA YARIS", p:"2人", l:"1.5L 動力，TNGA 架構，操控靈活，安全配置高。", c:"24寸×1 + 20寸×2", d:"適合 1-2 人輕便出行，油耗表現極佳。"},
-            {id:"NISSAN NOTE", p:"2-3人", l:"e-POWER 電驅技術，加速平順，行駛靜謐。", c:"24寸×2 + 20寸×1", d:"內部空間略優於 Yaris，電機驅動動力響應快。"},
-            {id:"TOYOTA GR YARIS", p:"1-2人", l:"1.6T 四驅，WRC 拉力賽基因，鋼砲級性能。", c:"20寸×2", d:"純性能車，後備箱極小，不建議帶大件行李。"},
-            {id:"ALPHARD 3代 黄金版", p:"6-7人", l:"2.5L/3.5L，豪華航空座椅，側滑門，濾震極佳。", c:"28寸×4 或 20寸×8", d:"5 人狀態下行李空間最充裕；坐滿 7 人則空間極小。"},
-            {id:"ALPHARD 3代 SC版", p:"6-7人", l:"配置略高於黃金版，內飾更具質感，極致舒適。", c:"28寸×4 或 20寸×8", d:"大阪/京都接送機及長途包車的明星車型。"},
-            {id:"ALPHARD 40系", p:"6人", l:"全新 TNGA-K 平台，更靜謐，二排觸控屏調節。", c:"28寸×4 或 20寸×6", d:"目前租車市場的旗艦王牌，檔次感最高。"},
-            {id:"VELLFIRE 40系", p:"6人", l:"運動化調教，外觀更霸氣，動力響應更積極。", c:"28寸×4 或 20寸×6", d:"適合追求個性與動力的高端商務/家庭用戶。"},
-            {id:"TOYOTA SIENNA", p:"7人", l:"2.5L 混動，雙側滑門，超大縱向空間。", c:"28寸×5 + 20寸×2", d:"7 人滿載時仍有極強的行李裝載能力，性價比之王。"},
-            {id:"LEXUS LM", p:"4人", l:"頂級 4 座佈局，車載冰箱，電視屏，極致私密。", c:"28寸×4", d:"專為極致商務需求設計，大阪市內頂奢接送。"},
-            {id:"LEXUS RX", p:"4-5人", l:"豪華 SUV 標桿，油電混動，內飾做工極細膩。", c:"28寸×2 + 20寸×2", d:"適合關西郊外自駕，駕駛視野好，品牌認可度高。"},
-            {id:"BMW 5 SERIES TOURING", p:"4-5人", l:"旅行車身，操控精準，高速巡航質感極佳。", c:"28寸×2 + 24寸×2", d:"後備箱開口大，適合追求品味與駕駛感的旅行者。"},
-            {id:"BENZ C-CLASS ESTATE", p:"2-4人", l:"優雅旅行版，精緻內飾，轉向輕盈，好開好停。", c:"28寸×2", d:"適合 2-3 人攜帶少量大件行李，市區遊玩非常方便。"},
-            {id:"TOYOTA HIACE 9座", p:"9人", l:"2.8T 柴油，超強扭矩，最強空間利用率。", c:"28寸×8", d:"大團隊、滑雪團、高爾夫團的唯一選擇。"},
-            {id:"TOYOTA NOAH", p:"6-7人", l:"混動系統，低地台設計，上下車方便。", c:"28寸×3", d:"實用型 MPV，空間靈活，適合普通家庭日本自由行。"},
-            {id:"TOYOTA VOXY", p:"6-7人", l:"與 Noah 同平台，外觀更犀利，LED 大燈組。", c:"28寸×3", d:"適合帶小朋友的家庭，視野好且側滑門安全方便。"},
-            {id:"BENZ V-CLASS", p:"6-7人", l:"德系商務風，空間方正，品牌氣場強大。", c:"28寸×5", d:"行李空間表現優於埃爾法，適合高端商務組團。"},
-            {id:"BMW X5", p:"4-5人", l:"3.0T 動力，公路王者，四驅系統應對複雜路況。", c:"28寸×3", d:"空間寬敞，適合長途跨城及山路駕駛。"}
+            {id:"SUBARU IMPREZA", p:"2-4人", l:"2.0L 水平对置引擎，全时四驱，抓地力极强。", c:"28寸×1 + 24寸×1", d:"适合追求驾驶稳定性的用户，雨雪天气表现优秀。"},
+            {id:"HONDA FIT", p:"2-3人", l:"1.5L 动力，空间魔术师，视野好，市区穿梭灵活。", c:"24寸×2 + 20寸×2", d:"同级别空间利用率最高，后排座椅可向上折叠。"},
+            {id:"TOYOTA AQUA", p:"2人", l:"1.5L 混动，极其省油，转向半径小，好停车。", c:"24寸×2 或 20寸×3", d:"适合 2 人深度游，后排坐人后行李空间较局促。"},
+            {id:"TOYOTA YARIS", p:"2人", l:"1.5L 动力，TNGA 架构，操控灵活，安全配置高。", c:"24寸×1 + 20寸×2", d:"适合 1-2 人轻便出行，油耗表现极佳。"},
+            {id:"NISSAN NOTE", p:"2-3人", l:"e-POWER 电驱技术，加速平顺，行驶静谧。", c:"24寸×2 + 20寸×1", d:"内部空间略优于 Yaris，电机驱动动力响应快。"},
+            {id:"TOYOTA GR YARIS", p:"1-2人", l:"1.6T 四驱，WRC 拉力赛基因，钢炮级性能。", c:"20寸×2", d:"纯性能车，后备箱极小，不建议带大件行李。"},
+            {id:"ALPHARD 3代 黄金版", p:"6-7人", l:"2.5L/3.5L，豪华航空座椅，侧滑门，滤震极佳。", c:"28寸×4 或 20寸×8", d:"5 人状态下行李空间最充裕；坐满 7 人则空间极小。"},
+            {id:"ALPHARD 3代 SC版", p:"6-7人", l:"配置略高于黄金版，内饰更具质感，极致舒适。", c:"28寸×4 或 20寸×8", d:"大阪/京都接送机及长途包车的明星车型。"},
+            {id:"ALPHARD 40系", p:"6人", l:"全新 TNGA-K 平台，更静谧，二排触控屏调节。", c:"28寸×4 或 20寸×6", d:"目前租车市场的旗舰王牌，档次感最高。"},
+            {id:"VELLFIRE 40系", p:"6人", l:"运动化调教，外观更霸气，动力响应更积极。", c:"28寸×4 或 20寸×6", d:"适合追求个性与动力的高端商务/家庭用户。"},
+            {id:"TOYOTA SIENNA", p:"7人", l:"2.5L 混动，双侧滑门，超大纵向空间。", c:"28寸×5 + 20寸×2", d:"7 人满载时仍有极强的行李装载能力，性价比之王。"},
+            {id:"LEXUS LM", p:"4人", l:"顶级 4 座布局，车载冰箱，电视屏，极致私密。", c:"28寸×4", d:"专为极致商务需求设计，大阪市内顶奢接送。"},
+            {id:"LEXUS RX", p:"4-5人", l:"豪华 SUV 标杆，油电混动，内饰做工极细腻。", c:"28寸×2 + 20寸×2", d:"适合关西郊外自驾，驾驶视野好，品牌认可度高。"},
+            {id:"BMW 5 SERIES TOURING", p:"4-5人", l:"旅行车身，操控精准，高速巡航质感极佳。", c:"28寸×2 + 24寸×2", d:"后备箱开口大，适合追求品味与驾驶感的旅行者。"},
+            {id:"BENZ C-CLASS ESTATE", p:"2-4人", l:"优雅旅行版，精致内饰，转向轻盈，好开好停。", c:"28寸×2", d:"适合 2-3 人携带少量大件行李，市区游玩非常方便。"},
+            {id:"TOYOTA HIACE 9座", p:"9人", l:"2.8T 柴油，超强扭矩，最强空间利用率。", c:"28寸×8", d:"大团队、滑雪团、高尔夫团的唯一选择。"},
+            {id:"TOYOTA NOAH", p:"6-7人", l:"混动系统，低地台设计，上下车方便。", c:"28寸×3", d:"实用型 MPV，空间灵活，适合普通家庭日本自由行。"},
+            {id:"TOYOTA VOXY", p:"6-7人", l:"与 Noah 同平台，外观更犀利，LED 大灯组。", c:"28寸×3", d:"适合带小朋友的家庭，视野好且侧滑门安全方便。"},
+            {id:"BENZ V-CLASS", p:"6-7人", l:"德系商务风，空间方正，品牌气场强大。", c:"28寸×5", d:"行李空间表现优于埃尔法，适合高端商务组团。"},
+            {id:"BMW X5", p:"4-5人", l:"3.0T 动力，公路王者，四驱系统应对复杂路况。", c:"28寸×3", d:"空间宽敞，适合长途跨城及山路驾驶。"}
         ];
 
         const sel = document.getElementById('carSelect');
@@ -115,43 +111,45 @@
             grid.innerHTML = '';
             const cnt = files.length;
             grid.style.gridTemplateColumns = cnt >= 3 ? '1.5fr 1fr' : (cnt === 2 ? '1fr 1fr' : '1fr');
-            
             files.slice(0, 3).forEach((file, i) => {
                 const r = new FileReader();
                 r.onload = (e) => {
-                    const box = document.createElement('div');
-                    box.className = 'photo-box';
                     const img = document.createElement('img');
                     img.src = e.target.result;
                     img.className = 'grid-img';
-                    if(cnt >= 3 && i === 0) box.style.gridRow = 'span 2';
-                    box.appendChild(img);
-                    grid.appendChild(box);
+                    if(cnt >= 3 && i === 0) img.style.gridRow = 'span 2';
+                    grid.appendChild(img);
                 };
                 r.readAsDataURL(file);
             });
         }
 
-        function generatePoster() {
-            if(!sel.value) { alert("請先選擇車型"); return; }
-            const resArea = document.getElementById('result-area');
-            const resImg = document.getElementById('result-img');
+        function downloadPoster() {
+            if(!sel.value) { alert("请先选择车型！"); return; }
+            const btn = document.getElementById('downloadBtn');
+            btn.innerText = "⏳ 正在生成高清图...";
             
-            // 核心畫質修正
+            // 解决失真与下载的核心配置
             html2canvas(document.getElementById('poster-wrap'), { 
-                scale: 3.5, // 穩定倍率，防止手機降質
+                scale: 4, // 强制 4 倍高清采样，拒绝失真
                 useCORS: true,
-                allowTaint: false,
-                imageTimeout: 0,
-                backgroundColor: "#FFFFFF",
-                onclone: (clonedDoc) => {
-                    // 強制讓克隆後的元素保持高清晰渲染
-                    clonedDoc.getElementById('poster-wrap').style.transform = "scale(1)";
-                }
+                backgroundColor: "#FFFFFF"
             }).then(canvas => {
-                resImg.src = canvas.toDataURL("image/png", 1.0);
-                resArea.style.display = "block";
-                window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+                // 将画布转为高清 PNG
+                const imgData = canvas.toDataURL("image/png", 1.0);
+                // 创建虚拟下载锚点
+                const link = document.createElement('a');
+                link.href = imgData;
+                link.download = `大阪租车-${document.getElementById('outTitle').innerText}.png`;
+                // 模拟点击下载
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                btn.innerText = "💾 点击下载海报";
+            }).catch(err => {
+                alert("下载失败，请尝试在浏览器中打开网址。");
+                btn.innerText = "💾 点击下载海报";
             });
         }
     </script>
