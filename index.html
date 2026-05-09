@@ -9,15 +9,15 @@
         :root { --accent: #000; --bg: #FFF; --text: #333; }
         body { font-family: -apple-system, "PingFang SC", sans-serif; background: #EEE; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
         
-        /* 1. UI 控件 */
+        /* UI 控件 */
         .controls { width: 100%; max-width: 375px; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-bottom: 15px; box-sizing: border-box; }
-        select { width: 100%; padding: 12px; border: 1px solid #DDD; border-radius: 8px; font-size: 15px; margin-bottom: 12px; outline: none; }
+        select { width: 100%; padding: 12px; border: 1px solid #DDD; border-radius: 8px; font-size: 14px; margin-bottom: 12px; background: #FFF; outline: none; -webkit-appearance: none; }
         .btn-row { display: flex; gap: 8px; }
         .btn { flex: 1; padding: 12px; border-radius: 8px; font-weight: bold; text-align: center; cursor: pointer; border: none; font-size: 13px; }
         .btn-up { background: #F0F0F0; color: #333; }
         .btn-dl { background: #000; color: #FFF; }
 
-        /* 2. 海报核心容器 */
+        /* 海报核心布局 */
         .poster-container { display: flex; flex-direction: column; overflow: hidden; position: relative; background: var(--bg); }
         .photo-grid { width: 100%; display: grid; gap: 2px; background: #F8F8F8; overflow: hidden; }
         .photo-cell { width: 100%; height: 100%; background-position: center; background-size: cover; background-repeat: no-repeat; }
@@ -27,50 +27,43 @@
         .info-item b { font-size: 0.8em; color: #999; display: block; margin-bottom: 2px; }
         .info-item span { color: var(--text); font-weight: 600; display: block; word-break: break-all; }
 
-        /* ==========================================
-           版式 1: 杂志风 (默认 - 上图下文)
-           ========================================== */
+        /* 版式 1: 杂志风 (上图下文) */
         .tpl-1 .photo-grid { height: 70%; }
         .tpl-1 .text-section { height: 30%; padding: 20px; background: #FFF; }
 
-        /* ==========================================
-           版式 2: 卡片风 (照片铺满 + 半透明浮窗)
-           ========================================== */
+        /* 版式 2: 浮窗风 (透明度 30%) */
         .tpl-2 .photo-grid { height: 100%; position: absolute; top: 0; left: 0; }
         .tpl-2 .text-section { 
             position: absolute; bottom: 8%; left: 5%; width: 90%; 
-            background: rgba(255,255,255,0.85); /* 半透明卡片 */
-            backdrop-filter: blur(5px);
-            padding: 25px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.3); /* 降低到30%透明度 */
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            padding: 25px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.2);
         }
-        .tpl-2 .car-title { border-bottom-color: #E74C3C; }
 
-        /* ==========================================
-           版式 3: 视觉反转 (上文下图)
-           ========================================== */
-        .tpl-3 { flex-direction: column-reverse !important; background: #FDF6E3; } /* 浅米色底 */
-        .tpl-3 .photo-grid { height: 70%; }
-        .tpl-3 .text-section { height: 30%; padding: 20px; background: #FDF6E3; }
-        .tpl-3 .car-title { border-bottom: none; background: #000; color: #FFF; padding: 2px 8px; border-radius: 4px; }
+        /* 版式 3: 反转风 (上文下图) */
+        .tpl-3 { flex-direction: column-reverse !important; background: #FFF; }
+        .tpl-3 .photo-grid { height: 72%; }
+        .tpl-3 .text-section { height: 28%; padding: 20px; background: #FFF; }
+        .tpl-3 .car-title { border-bottom-color: #3498db; }
 
-        /* 预览区尺寸 (375x500) */
-        #preview-box { width: 375px; height: 500px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        #preview-box .car-title { font-size: 20px; margin-bottom: 10px; }
+        /* 预览区 (375x500) */
+        #preview-box { width: 375px; height: 500px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); flex-shrink: 0; }
+        #preview-box .car-title { font-size: 18px; margin-bottom: 10px; }
         #preview-box .info-item b { font-size: 8px; }
-        #preview-box .info-item span { font-size: 9px; }
+        #preview-box .info-item span { font-size: 9px; line-height: 1.2; }
 
-        /* 渲染实验室 (1200x1600) */
+        /* 渲染区 (1200x1600) */
         #render-lab { position: absolute; left: -9999px; top: 0; width: 1200px; height: 1600px; }
         #render-lab .text-section { padding: 60px 80px; }
         #render-lab .car-title { font-size: 80px; border-bottom-width: 15px; margin-bottom: 40px; }
         #render-lab .info-grid { gap: 40px; }
         #render-lab .info-item b { font-size: 32px; margin-bottom: 10px; }
-        #render-lab .info-item span { font-size: 38px; line-height: 1.4; }
+        #render-lab .info-item span { font-size: 36px; line-height: 1.4; }
 
         /* 结果展示 */
         #overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center; flex-direction: column; }
-        #res-img { width: 85%; max-height: 80%; border: 3px solid #FFF; border-radius: 4px; }
-        .tip { color: white; margin-top: 20px; font-weight: bold; }
+        #res-img { width: 85%; max-height: 80%; border: 2px solid #FFF; border-radius: 4px; }
+        .tip { color: white; margin-top: 15px; font-weight: bold; }
         .close { position: absolute; top: 20px; right: 20px; color: white; font-size: 35px; cursor: pointer; }
     </style>
 </head>
@@ -78,7 +71,7 @@
 
     <div class="controls">
         <select id="carSel" onchange="updateUI()">
-            <option value="">-- 选择车型 (随机生成3种布局) --</option>
+            <option value="">-- 选择车型 (全20款数据加载完毕) --</option>
         </select>
         <div class="btn-row">
             <div class="btn btn-up" onclick="document.getElementById('fileIn').click()">📸 传照片</div>
@@ -95,7 +88,7 @@
                 <div class="info-item"><b>建议人数</b><span id="p-p">-</span></div>
                 <div class="info-item"><b>性能配置</b><span id="l-p">-</span></div>
                 <div class="info-item"><b>行李空间</b><span id="c-p">-</span></div>
-                <div class="info-item"><b>车型备注</b><span id="d-p">-</span></div>
+                <div class="info-item"><b>备注说明</b><span id="d-p">-</span></div>
             </div>
         </div>
     </div>
@@ -106,7 +99,7 @@
             <div class="car-title" id="t-w">MODEL</div>
             <div class="info-grid">
                 <div class="info-item"><b>建议人数 / GUESTS</b><span id="p-w">-</span></div>
-                <div class="info-item)<b>性能特点 / FEATURES</b><span id="l-w">-</span></div>
+                <div class="info-item"><b>性能特点 / FEATURES</b><span id="l-w">-</span></div>
                 <div class="info-item"><b>行李能力 / CARGO</b><span id="c-w">-</span></div>
                 <div class="info-item"><b>备注说明 / REMARK</b><span id="d-w">-</span></div>
             </div>
@@ -120,17 +113,28 @@
     </div>
 
     <script>
+        // 严格 100% 还原 20 辆车全表格数据
         const carData = [
-            {id:"SUBARU IMPREZA", p:"2-4人", l:"2.0L 水平对置引擎，全时四驱。", c:"28寸×1 + 24寸×1", d:"驾驶极其稳定，雨雪天气表现优秀。"},
-            {id:"HONDA FIT", p:"2-3人", l:"1.5L 动力，空间魔术师，视野极好。", c:"24寸×2 + 20寸×2", d:"同级别空间利用率最高，灵活穿梭。"},
-            {id:"TOYOTA AQUA", p:"2人", l:"1.5L 混动，极其省油，转向半径小。", c:"24寸×2 或 20寸×3", d:"适合 2 人深度游，好开车好停车。"},
-            {id:"TOYOTA YARIS", p:"2人", l:"1.5L 动力，TNGA 架构，操控灵活。", c:"24寸×1 + 20寸×2", d:"适合 1-2 人轻便出行，安全配置高。"},
-            {id:"NISSAN NOTE", p:"2-3人", l:"e-POWER 电驱技术，加速平顺。", c:"24寸×2 + 20寸×1", d:"内部空间略优于 Yaris，动力响应快。"},
-            {id:"ALPHARD 3代 黄金版", p:"6-7人", l:"2.5L/3.5L，豪华航空座椅，滤震极佳。", c:"28寸×4 或 20寸×8", d:"接送机明星车型，5人时空间最充裕。"},
-            {id:"ALPHARD 40系", p:"6人", l:"全新旗舰，更静谧，二排触控屏调节。", c:"28寸×4 或 20寸×6", d:"目前租车市场的顶级王牌，档次感最高。"},
-            {id:"TOYOTA SIENNA", p:"7人", l:"2.5L 混动，双侧滑门，超大纵向空间。", c:"28寸×5 + 20寸×2", d:"性价比之王，满载仍有极强装载力。"},
-            {id:"LEXUS LM", p:"4人", l:"顶级 4 座布局，车载冰箱，极致私密。", c:"28寸×4", d:"专为极致商务需求设计，顶奢体验。"},
-            {id:"BMW 5 SERIES TOURING", p:"4-5人", l:"旅行车身，操控精准，高速质感极佳。", c:"28寸×2 + 24寸×2", d:"后备箱开口大，品味自驾首选。"}
+            {id:"SUBARU IMPREZA", p:"2-4人", l:"2.0L 水平对置引擎，全时四驱，抓地力极强。", c:"28寸×1 + 24寸×1", d:"适合追求驾驶稳定性的用户，雨雪天气表现优秀。"},
+            {id:"HONDA FIT", p:"2-3人", l:"1.5L 动力，空间魔术师，视野好，市区穿梭灵活。", c:"24寸×2 + 20寸×2", d:"同级别空间利用率最高，后排座椅可向上折叠。"},
+            {id:"TOYOTA AQUA", p:"2人", l:"1.5L 混动，极其省油，转向半径小，好停车。", c:"24寸×2 或 20寸×3", d:"适合 2 人深度游，后排坐人后行李空间较局促。"},
+            {id:"TOYOTA YARIS", p:"2人", l:"1.5L 动力，TNGA 架构，操控灵活，安全配置高。", c:"24寸×1 + 20寸×2", d:"适合 1-2 人轻便出行，油耗表现极佳。"},
+            {id:"NISSAN NOTE", p:"2-3人", l:"e-POWER 电驱技术，加速平顺，行驶静谧。", c:"24寸×2 + 20寸×1", d:"内部空间略优于 Yaris，电机驱动动力响应快。"},
+            {id:"TOYOTA GR YARIS", p:"1-2人", l:"1.6T 四驱，WRC 拉力赛基因，钢炮级性能。", c:"20寸×2", d:"纯性能车，后备箱极小，不建议带大件行李。"},
+            {id:"ALPHARD 3代 黄金版", p:"6-7人", l:"2.5L/3.5L，豪华航空座椅，侧滑门，滤震极佳。", c:"28寸×4 或 20寸×8", d:"5 人状态下行李空间最充裕；坐满 7 人则空间极小。"},
+            {id:"ALPHARD 3代 SC版", p:"6-7人", l:"配置略高于黄金版，内饰更具质感，极致舒适。", c:"28寸×4 或 20寸×8", d:"大阪/京都接送机及长途包车的明星车型。"},
+            {id:"ALPHARD 40系", p:"6人", l:"全新 TNGA-K 平台，更静谧，二排触控屏调节。", c:"28寸×4 或 20寸×6", d:"目前租车市场的旗舰王牌，档次感最高。"},
+            {id:"VELLFIRE 40系", p:"6人", l:"运动化调教，外观更霸气，动力响应更积极。", c:"28寸×4 或 20寸×6", d:"适合追求个性与动力的高端商务/家庭用户。"},
+            {id:"TOYOTA SIENNA", p:"7人", l:"2.5L 混动，双侧滑门，超大纵向空间。", c:"28寸×5 + 20寸×2", d:"7 人满载时仍有极强的行李装载能力，性价比之王。"},
+            {id:"LEXUS LM", p:"4人", l:"顶级 4 座布局，车载冰箱，电视屏，极致私密。", c:"28寸×4", d:"专为极致商务需求设计，大阪市内顶奢接送。"},
+            {id:"LEXUS RX", p:"4-5人", l:"豪华 SUV 标杆，油电混动，内饰做工极细腻。", c:"28寸×2 + 20寸×2", d:"适合关西郊外自驾，驾驶视野好，品牌认可度高。"},
+            {id:"BMW 5 SERIES TOURING", p:"4-5人", l:"旅行车身，操控精准，高速巡航质感极佳。", c:"28寸×2 + 24寸×2", d:"后备箱开口大，适合追求品味与驾驶感的旅行者。"},
+            {id:"BENZ C-CLASS ESTATE", p:"2-4人", l:"优雅旅行版，精致内饰，转向轻盈，好开好停。", c:"28寸×2", d:"适合 2-3 人携带少量大件行李，市区游玩非常方便。"},
+            {id:"TOYOTA HIACE 9座", p:"9人", l:"2.8T 柴油，超强扭矩，最强空间利用率。", c:"28寸×8", d:"大团队、滑雪团、高尔夫团的唯一选择。"},
+            {id:"TOYOTA NOAH", p:"6-7人", l:"混动系统，低地台设计，上下车方便。", c:"28寸×3", d:"实用型 MPV，空间灵活，适合普通家庭日本自由行。"},
+            {id:"TOYOTA VOXY", p:"6-7人", l:"与 Noah 同平台，外观更犀利，LED 大灯组。", c:"28寸×3", d:"适合带小朋友的家庭，视野好且侧滑门安全方便。"},
+            {id:"BENZ V-CLASS", p:"6-7人", l:"德系商务风，空间方正，品牌气场强大。", c:"28寸×5", d:"行李空间表现优于埃尔法，适合高端商务组团。"},
+            {id:"BMW X5", p:"4-5人", l:"3.0T 动力，公路王者，四驱系统应对复杂路况。", c:"28寸×3", d:"空间宽敞，适合长途跨城及山路驾驶。"}
         ];
 
         const sel = document.getElementById('carSel');
@@ -156,7 +160,7 @@
                 const grid = document.getElementById(gridId);
                 grid.innerHTML = '';
                 const cnt = files.length;
-                grid.style.gridTemplateColumns = cnt >= 3 ? '1.4fr 1fr' : (cnt === 2 ? '1fr 1fr' : '1fr');
+                grid.style.gridTemplateColumns = cnt >= 3 ? '1.5fr 1fr' : (cnt === 2 ? '1fr 1fr' : '1fr');
                 files.slice(0, 3).forEach((file, i) => {
                     const r = new FileReader();
                     r.onload = (e) => {
@@ -176,14 +180,14 @@
             const lab = document.getElementById('render-lab');
             const pre = document.getElementById('preview-box');
             
-            // 彻底随机版式逻辑 (1, 2, 3)
+            // 随机版式逻辑 1-3
             const randomIdx = Math.floor(Math.random() * 3) + 1;
             [lab, pre].forEach(el => {
                 el.classList.remove('tpl-1', 'tpl-2', 'tpl-3');
                 el.classList.add('tpl-' + randomIdx);
             });
 
-            // 1:1 抓取隐藏的高清渲染区 (1200x1600)，绝无拉伸
+            // 1:1 抓取离屏工作区 1200x1600，拒绝失真
             html2canvas(lab, { 
                 scale: 1, 
                 useCORS: true,
