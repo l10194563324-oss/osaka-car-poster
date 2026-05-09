@@ -3,38 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>大阪租车 · 海报工厂 v32</title>
+    <title>大阪租车 · 极清海报 v33</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
     <style>
         body { font-family: -apple-system, sans-serif; background: #F4F4F4; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
         .controls { width: 100%; max-width: 375px; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-bottom: 15px; box-sizing: border-box; }
-        select { width: 100%; padding: 12px; border: 1px solid #DDD; border-radius: 8px; font-size: 15px; margin-bottom: 12px; background: #FFF; outline: none; }
+        select { width: 100%; padding: 12px; border: 1px solid #DDD; border-radius: 8px; font-size: 15px; margin-bottom: 12px; outline: none; }
         .btn-row { display: flex; gap: 8px; }
         .btn { flex: 1; padding: 12px; border-radius: 8px; font-weight: bold; text-align: center; cursor: pointer; border: none; font-size: 14px; }
         .btn-up { background: #E9E9E9; color: #333; }
         .btn-dl { background: #000; color: #FFF; }
 
-        /* 海报主容器 - 严格 3:4 比例 */
+        /* 海报容器 - 3:4 比例，锁定物理像素 */
         #poster-wrap { 
             width: 375px; height: 500px; background: #FFF; 
             display: flex; flex-direction: column; overflow: hidden; 
             position: relative; flex-shrink: 0;
+            image-rendering: -webkit-optimize-contrast; /* 强制锐化渲染 */
         }
         
+        /* 拼图区 */
         #photo-grid { width: 375px; height: 300px; display: grid; gap: 1px; background: #FFF; overflow: hidden; }
         .photo-cell { 
             width: 100%; height: 100%; 
             background-position: center; background-size: cover; background-repeat: no-repeat;
         }
 
-        .text-section { width: 375px; height: 200px; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; background: #FFF; border-top: 1px solid #EEE; position: relative; }
+        /* 文字区 - 严格对应表格内容 */
+        .text-section { width: 375px; height: 200px; padding: 18px 22px; box-sizing: border-box; display: flex; flex-direction: column; background: #FFF; border-top: 1px solid #EEE; position: relative; }
         .car-title { font-size: 21px; font-weight: 900; border-bottom: 3.5px solid #000; margin-bottom: 12px; width: fit-content; line-height: 1.1; color: #000; }
         .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .info-item b { font-size: 9px; color: #AAA; display: block; margin-bottom: 3px; letter-spacing: 0.5px; }
         .info-item span { font-size: 10.5px; line-height: 1.4; color: #333; font-weight: 600; display: block; word-break: break-all; }
         .footer { margin-top: auto; border-top: 1px solid #F5F5F5; padding-top: 6px; font-size: 8.5px; color: #CCC; display: flex; justify-content: space-between; font-weight: bold; }
 
-        /* 下载遮罩层 */
+        /* 结果弹窗层 */
         #download-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center; flex-direction: column; }
         #result-img { width: 85%; border: 3px solid #FFF; border-radius: 4px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
         .overlay-tip { color: white; margin-top: 20px; font-size: 14px; font-weight: bold; }
@@ -49,7 +52,7 @@
         </select>
         <div class="btn-row">
             <div class="btn btn-up" onclick="document.getElementById('fileIn').click()">📸 上传照片</div>
-            <div class="btn btn-dl" id="dlBtn" onclick="processPoster()">💾 生成高清图</div>
+            <div class="btn btn-dl" id="dlBtn" onclick="processPoster()">💾 点击生成海报</div>
         </div>
         <input type="file" id="fileIn" multiple accept="image/*" style="display:none" onchange="loadPhotos(this)">
     </div>
@@ -71,11 +74,10 @@
     <div id="download-overlay">
         <span class="close-btn" onclick="closeOverlay()">×</span>
         <img id="result-img" src="">
-        <div class="overlay-tip">↓↓ 长按上方海报 保存到手机 ↓↓</div>
+        <div class="overlay-tip">↓↓ 长按上方海报 保存到相册 ↓↓</div>
     </div>
 
     <script>
-        // 严格按照您的 CSV 表格文字录入
         const carData = [
             {id:"SUBARU IMPREZA", p:"2-4人", l:"2.0L 水平对置引擎，全时四驱，抓地力极强。", c:"28寸×1 + 24寸×1", d:"适合追求驾驶稳定性的用户，雨雪天气表现优秀。"},
             {id:"HONDA FIT", p:"2-3人", l:"1.5L 动力，空间魔术师，视野好，市区穿梭灵活。", c:"24寸×2 + 20寸×2", d:"同级别空间利用率最高，后排座椅可向上折叠。"},
@@ -135,19 +137,24 @@
             });
         }
 
-        // 您要求的 processPoster 逻辑修正
+        // 终极修复函数：物理缩放锁定
         async function processPoster() {
-            if(!sel.value){ alert('请先选择车型'); return; }
+            if(!sel.value) { alert('请先选择车型'); return; }
             const btn = document.getElementById('dlBtn');
-            btn.innerText = "⏳ 正在渲染...";
+            btn.innerText = "⏳ 像素优化中...";
             
             const node = document.getElementById('poster-wrap');
             try {
-                // 核心修复：使用 pixelRatio 替代强制 canvasWidth，防止马赛克
+                // 强制 pixelRatio 为 3，这会生成约 1125x1500 像素的高清图
+                // 这个尺寸是手机端不触发降质压缩的“极限清晰值”
                 const blob = await htmlToImage.toBlob(node, {
                     pixelRatio: 3, 
                     cacheBust: true,
-                    backgroundColor: '#fff'
+                    backgroundColor: '#fff',
+                    style: {
+                        transform: 'scale(1)',
+                        transformOrigin: 'top left'
+                    }
                 });
                 const url = URL.createObjectURL(blob);
                 document.getElementById('result-img').src = url;
