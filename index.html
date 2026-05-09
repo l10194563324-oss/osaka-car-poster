@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>大阪租车 · 智能视觉工厂 v38</title>
+    <title>大阪租车 · 视觉工厂 v40</title>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <style>
         :root { --accent: #000; --bg: #FFF; --text: #333; }
         body { font-family: -apple-system, "PingFang SC", sans-serif; background: #F0F0F0; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
         
+        /* 1. UI 控件 */
         .controls { width: 100%; max-width: 375px; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-bottom: 15px; box-sizing: border-box; }
         select { width: 100%; padding: 12px; border: 1px solid #DDD; border-radius: 8px; font-size: 15px; margin-bottom: 12px; background: #FFF; outline: none; }
         .btn-row { display: flex; gap: 8px; }
@@ -16,181 +17,207 @@
         .btn-up { background: #EEE; color: #333; }
         .btn-dl { background: #000; color: #FFF; }
 
-        /* 海报主容器 */
-        #poster-wrap { 
-            width: 375px; height: 500px; background: var(--bg); 
-            display: flex; flex-direction: column; overflow: hidden; 
-            position: relative; flex-shrink: 0; transition: 0.3s;
+        /* 2. 预览区 (手机显示用) */
+        #preview-box { width: 375px; height: 500px; background: #FFF; overflow: hidden; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.1); flex-shrink: 0; }
+
+        /* 3. 渲染实验室 (隐藏区，真正的高清 1200x1600) */
+        #render-lab { 
+            position: absolute; left: -9999px; top: 0;
+            width: 1200px; height: 1600px; background: #FFF; 
+            display: flex; flex-direction: column; overflow: hidden;
         }
 
-        /* 拼图区 */
-        #photo-grid { width: 100%; height: 60%; display: grid; gap: 1px; background: #EEE; overflow: hidden; z-index: 1; }
+        /* 4. 通用内部结构样式 */
+        .photo-grid { width: 100%; height: 60%; display: grid; gap: 2px; background: #EEE; overflow: hidden; }
         .photo-cell { width: 100%; height: 100%; background-position: center; background-size: cover; background-repeat: no-repeat; }
+        .text-section { width: 100%; height: 40%; box-sizing: border-box; display: flex; flex-direction: column; position: relative; }
+        .car-title { font-weight: 900; color: var(--text); border-bottom: solid var(--accent); }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; }
+        .info-item b { color: #999; display: block; }
+        .info-item span { color: var(--text); font-weight: 600; display: block; word-break: break-all; }
+        .footer { margin-top: auto; border-top: 1px solid #EEE; display: flex; justify-content: space-between; font-weight: bold; }
 
-        /* 文字区 */
-        .text-section { width: 100%; height: 40%; padding: 18px 22px; box-sizing: border-box; display: flex; flex-direction: column; position: relative; z-index: 2; transition: 0.3s; }
-        .car-title { font-size: 21px; font-weight: 900; border-bottom: 4px solid var(--accent); margin-bottom: 12px; width: fit-content; color: var(--text); }
-        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .info-item b { font-size: 9px; color: #999; display: block; margin-bottom: 2px; letter-spacing: 0.5px; }
-        .info-item span { font-size: 10px; line-height: 1.4; color: var(--text); font-weight: 600; display: block; word-break: break-all; }
-        .footer { margin-top: auto; border-top: 1px solid #EEE; padding-top: 6px; font-size: 8px; color: #BBB; display: flex; justify-content: space-between; font-weight: bold; }
-
-        /* 装饰元素 */
-        .decor { display: none; pointer-events: none; }
-
-        /* Style A: 日系杂志 (默认) */
+        /* Style A: 杂志风 */
         .tpl-a { --bg: #FFF; --text: #333; --accent: #000; }
-        .tpl-a .decor-stamp { display: block; position: absolute; top: 10px; right: 20px; width: 45px; height: 45px; border: 2px solid #E74C3C; border-radius: 50%; color: #E74C3C; font-size: 10px; text-align: center; padding-top: 8px; font-weight: bold; transform: rotate(15deg); box-sizing: border-box; }
+        .decor-a { display: none; position: absolute; top: 5%; right: 5%; border: 3px solid #E74C3C; color: #E74C3C; border-radius: 50%; transform: rotate(15deg); font-weight: 900; text-align: center; }
+        .tpl-a .decor-a { display: block; }
 
-        /* Style B: 豪华黑金 (左右分栏) */
+        /* Style B: 黑金风 (左右结构) */
         .tpl-b { --bg: #111; --text: #FFF; --accent: #D4AF37; }
-        .tpl-b { flex-direction: row !important; }
-        .tpl-b #photo-grid { width: 40% !important; height: 100% !important; grid-template-columns: 1fr !important; border-right: 2px solid var(--accent); }
-        .tpl-b .photo-cell:not(:first-child) { display: none; }
-        .tpl-b .text-section { width: 60% !important; height: 100% !important; padding: 40px 20px !important; }
-        .tpl-b .info-grid { grid-template-columns: 1fr !important; gap: 15px !important; }
-        .tpl-b .car-title { color: var(--accent); border-bottom-color: var(--accent); }
-        .tpl-b .decor-badge { display: block; position: absolute; bottom: 30px; right: 15px; width: 40px; height: 40px; border: 1px solid var(--accent); border-radius: 4px; color: var(--accent); font-size: 8px; text-align: center; padding-top: 12px; opacity: 0.5; box-sizing: border-box; }
+        .tpl-b-layout { flex-direction: row !important; }
+        .tpl-b-layout .photo-grid { width: 40% !important; height: 100% !important; grid-template-columns: 1fr !important; border-right: 4px solid var(--accent); }
+        .tpl-b-layout .text-section { width: 60% !important; height: 100% !important; }
+        .tpl-b-layout .info-grid { grid-template-columns: 1fr !important; }
+        .decor-b { display: none; position: absolute; bottom: 8%; right: 8%; border: 1px solid var(--accent); color: var(--accent); opacity: 0.5; }
+        .tpl-b .decor-b { display: block; }
 
-        /* Style C: 街头潮流 (全屏背景) */
-        .tpl-c { --bg: #FFF; --text: #000; --accent: #2ECC71; }
-        .tpl-c #photo-grid { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; z-index: 1; grid-template-columns: 1fr !important; }
-        .tpl-c .photo-cell:not(:first-child) { display: none; }
-        .tpl-c .text-section { position: absolute; bottom: 20px; left: 20px; width: 335px !important; height: auto !important; min-height: 180px; background: rgba(255,255,255,0.95); border-radius: 12px; z-index: 3; padding: 20px !important; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-        .tpl-c .car-title { background: #000; color: #FFF; padding: 4px 10px; border: none; transform: rotate(-2deg); }
-        .tpl-c .footer { display: none; }
-        .tpl-c .decor-arrow { display: block; position: absolute; top: -10px; right: -10px; font-size: 24px; }
+        /* Style C: 潮流全屏 (悬浮结构) */
+        .tpl-c-layout { position: relative; }
+        .tpl-c-layout .photo-grid { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; grid-template-columns: 1fr !important; }
+        .tpl-c-layout .text-section { position: absolute; bottom: 5%; left: 5%; width: 90% !important; height: auto !important; min-height: 40%; background: rgba(255,255,255,0.96) !important; border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.3); border: none !important; }
+        .tpl-c-layout .car-title { background: #000; color: #FFF !important; transform: rotate(-1deg); padding: 5px 15px; border: none; }
+        .tpl-c-layout .footer { display: none; }
+        .decor-c { display: none; position: absolute; top: -10%; right: 0; font-size: 1.5em; }
+        .tpl-c .decor-c { display: block; }
 
-        /* 下载弹窗 */
-        #download-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center; flex-direction: column; }
-        #result-img { width: 85%; border: 3px solid #FFF; border-radius: 4px; }
-        .overlay-tip { color: white; margin-top: 20px; font-size: 14px; font-weight: bold; }
-        .close-btn { position: absolute; top: 20px; right: 20px; color: white; font-size: 30px; cursor: pointer; }
+        /* 渲染实验室尺寸 (大) */
+        #render-lab .text-section { padding: 80px 70px; }
+        #render-lab .car-title { font-size: 80px; border-bottom-width: 15px; margin-bottom: 40px; }
+        #render-lab .info-grid { gap: 40px; }
+        #render-lab .info-item b { font-size: 32px; margin-bottom: 10px; }
+        #render-lab .info-item span { font-size: 38px; line-height: 1.4; }
+        #render-lab .footer { padding-top: 25px; font-size: 30px; border-top-width: 3px; }
+        #render-lab .decor-a { width: 180px; height: 180px; font-size: 40px; padding-top: 40px; border-width: 8px; }
+        #render-lab .decor-b { padding: 15px; font-size: 28px; }
+
+        /* 预览区尺寸 (小) */
+        #preview-box .text-section { padding: 20px; }
+        #preview-box .car-title { font-size: 22px; border-bottom-width: 4px; margin-bottom: 12px; }
+        #preview-box .info-grid { gap: 10px; }
+        #preview-box .info-item b { font-size: 9px; margin-bottom: 3px; }
+        #preview-box .info-item span { font-size: 10.5px; line-height: 1.4; }
+        #preview-box .footer { padding-top: 6px; font-size: 8.5px; }
+        #preview-box .decor-a { width: 50px; height: 50px; font-size: 10px; padding-top: 10px; border-width: 2px; }
+        #preview-box .decor-b { padding: 4px; font-size: 8px; }
+
+        /* 弹窗 */
+        #overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center; flex-direction: column; }
+        #res-img { width: 85%; max-height: 80%; border: 3px solid #FFF; border-radius: 4px; }
+        .tip { color: white; margin-top: 20px; font-weight: bold; }
+        .close { position: absolute; top: 20px; right: 20px; color: white; font-size: 35px; }
     </style>
 </head>
 <body>
 
     <div class="controls">
-        <select id="carSelect" onchange="updateUI()">
-            <option value="">-- 选择车型 (随机3种版式) --</option>
+        <select id="carSel" onchange="updateUI()">
+            <option value="">-- 选择车型 (智能随机版式) --</option>
         </select>
         <div class="btn-row">
-            <div class="btn btn-up" onclick="document.getElementById('fileIn').click()">📸 上传照片</div>
-            <div class="btn btn-dl" onclick="processPoster()">✨ 随机版式生成</div>
+            <div class="btn btn-up" onclick="document.getElementById('fileIn').click()">📸 传图</div>
+            <div class="btn btn-dl" onclick="process()">✨ 生成4K不重复海报</div>
         </div>
-        <input type="file" id="fileIn" multiple accept="image/*" style="display:none" onchange="loadPhotos(this)">
+        <input type="file" id="fileIn" multiple accept="image/*" style="display:none" onchange="loadImgs(this)">
     </div>
 
-    <div id="poster-wrap" class="tpl-a">
-        <div id="photo-grid"></div>
+    <div id="preview-box" class="tpl-a">
+        <div class="photo-grid" id="pg-p"></div>
         <div class="text-section">
-            <div class="decor decor-stamp">大阪<br>限定</div>
-            <div class="decor decor-badge">PREMIUM<br>OSAKA</div>
-            <div class="decor decor-arrow">🚀</div>
-            
-            <div class="car-title" id="outTitle">MODEL</div>
+            <div class="decor-a">大阪<br>限定</div>
+            <div class="decor-b">PREMIUM<br>OSAKA</div>
+            <div class="decor-c">🚀</div>
+            <div class="car-title" id="t-p">MODEL</div>
             <div class="info-grid">
-                <div class="info-item"><b>载人数量 / GUESTS</b><span id="outP">-</span></div>
-                <div class="info-item"><b>性能特点 / FEATURES</b><span id="outL">-</span></div>
-                <div class="info-item"><b>行李能力 / CARGO</b><span id="outC">-</span></div>
-                <div class="info-item"><b>备注说明 / REMARK</b><span id="outD">-</span></div>
+                <div class="info-item"><b>建议人数</b><span id="p-p">-</span></div>
+                <div class="info-item"><b>动力性能</b><span id="l-p">-</span></div>
+                <div class="info-item"><b>载物空间</b><span id="c-p">-</span></div>
+                <div class="info-item"><b>车型备注</b><span id="d-p">-</span></div>
+            </div>
+            <div class="footer"><span>PREMIUM RENTAL</span><span>2026</span></div>
+        </div>
+    </div>
+
+    <div id="render-lab" class="tpl-a">
+        <div class="photo-grid" id="pg-w"></div>
+        <div class="text-section">
+            <div class="decor-a">大阪<br>限定</div>
+            <div class="decor-b">PREMIUM<br>OSAKA</div>
+            <div class="decor-c">🚀</div>
+            <div class="car-title" id="t-w">MODEL</div>
+            <div class="info-grid">
+                <div class="info-item"><b>建议人数 / GUESTS</b><span id="p-w">-</span></div>
+                <div class="info-item"><b>性能特点 / FEATURES</b><span id="l-w">-</span></div>
+                <div class="info-item"><b>行李能力 / CARGO</b><span id="c-w">-</span></div>
+                <div class="info-item"><b>备注说明 / REMARK</b><span id="d-w">-</span></div>
             </div>
             <div class="footer"><span>PREMIUM RENTAL OSAKA</span><span>KANSAI DRIVE 2026</span></div>
         </div>
     </div>
 
-    <div id="download-overlay">
-        <span class="close-btn" onclick="closeOverlay()">×</span>
-        <img id="result-img" src="">
-        <div class="overlay-tip">↓↓ 随机版式已生成 长按保存 ↓↓</div>
+    <div id="overlay">
+        <span class="close" onclick="closeO()">×</span>
+        <img id="res-img" src="">
+        <div class="tip">↓↓ 原画级超清 长按保存 ↓↓</div>
     </div>
 
     <script>
         const carData = [
-            {id:"SUBARU IMPREZA", p:"2-4人", l:"2.0L 水平对置引擎，全时四驱，抓地力极强。", c:"28寸×1 + 24寸×1", d:"适合追求驾驶稳定性的用户，雨雪天气表现优秀。"},
-            {id:"HONDA FIT", p:"2-3人", l:"1.5L 动力，空间魔术师，视野好，市区穿梭灵活。", c:"24寸×2 + 20寸×2", d:"同级别空间利用率最高，后排座椅可向上折叠。"},
-            {id:"TOYOTA AQUA", p:"2人", l:"1.5L 混动，极其省油，转向半径小，好停车。", c:"24寸×2 或 20寸×3", d:"适合 2 人深度游，后排坐人后行李空间较局促。"},
-            {id:"TOYOTA YARIS", p:"2人", l:"1.5L 动力，TNGA 架构，操控灵活，安全配置高。", c:"24寸×1 + 20寸×2", d:"适合 1-2 人轻便出行，油耗表现极佳。"},
-            {id:"NISSAN NOTE", p:"2-3人", l:"e-POWER 电驱技术，加速平顺，行驶静谧。", c:"24寸×2 + 20寸×1", d:"内部空间略优于 Yaris，电机驱动动力响应快。"},
-            {id:"TOYOTA GR YARIS", p:"1-2人", l:"1.6T 四驱，WRC 拉力赛基因，钢炮级性能。", c:"20寸×2", d:"纯性能车，后备箱极小，不建议带大件行李。"},
-            {id:"ALPHARD 3代 黄金版", p:"6-7人", l:"2.5L/3.5L，豪华航空座椅，侧滑门，滤震极佳。", c:"28寸×4 或 20寸×8", d:"5 人状态下行李空间最充裕；坐满 7 人则空间极小。"},
-            {id:"ALPHARD 3代 SC版", p:"6-7人", l:"配置略高于黄金版，内饰更具质感，极致舒适。", c:"28寸×4 或 20寸×8", d:"大阪/京都接送机及长途包车的明星车型。"},
-            {id:"ALPHARD 40系", p:"6人", l:"全新 TNGA-K 平台，更静谧，二排触控屏调节。", c:"28寸×4 或 20寸×6", d:"目前租车市场的旗舰王牌，档次感最高。"},
-            {id:"VELLFIRE 40系", p:"6人", l:"运动化调教，外观更霸气，动力响应更积极。", c:"28寸×4 或 20寸×6", d:"适合追求个性与动力的高端商务/家庭用户。"},
-            {id:"TOYOTA SIENNA", p:"7人", l:"2.5L 混动，双侧滑门，超大纵向空间。", c:"28寸×5 + 20寸×2", d:"7 人满载时仍有极强的行李装载能力，性价比之王。"},
-            {id:"LEXUS LM", p:"4人", l:"顶级 4 座布局，车载冰箱，电视屏，极致私密。", c:"28寸×4", d:"专为极致商务需求设计，大阪市内顶奢接送。"},
-            {id:"LEXUS RX", p:"4-5人", l:"豪华 SUV 标杆，油电混动，内饰做工极细腻。", c:"28寸×2 + 20寸×2", d:"适合关西郊外自驾，驾驶视野好，品牌认可度高。"},
-            {id:"BMW 5 SERIES TOURING", p:"4-5人", l:"旅行车身，操控精准，高速巡航质感极佳。", c:"28寸×2 + 24寸×2", d:"后备箱开口大，适合追求品味与驾驶感的旅行者。"},
-            {id:"BENZ C-CLASS ESTATE", p:"2-4人", l:"优雅旅行版，精致内饰，转向轻盈，好开好停。", c:"28寸×2", d:"适合 2-3 人携带少量大件行李，市区游玩非常方便。"},
-            {id:"TOYOTA HIACE 9座", p:"9人", l:"2.8T 柴油，超强扭矩，最强空间利用率。", c:"28寸×8", d:"大团队、滑雪团、高尔夫团的唯一选择。"},
-            {id:"TOYOTA NOAH", p:"6-7人", l:"混动系统，低地台设计，上下车方便。", c:"28寸×3", d:"实用型 MPV，空间灵活，适合普通家庭日本自由行。"},
-            {id:"TOYOTA VOXY", p:"6-7人", l:"与 Noah 同平台，外观更犀利，LED 大灯组。", c:"28寸×3", d:"适合带小朋友的家庭，视野好且侧滑门安全方便。"},
-            {id:"BENZ V-CLASS", p:"6-7人", l:"德系商务风，空间方正，品牌气场强大。", c:"28寸×5", d:"行李空间表现优于埃尔法，适合高端商务组团。"},
-            {id:"BMW X5", p:"4-5人", l:"3.0T 动力，公路王者，四驱系统应对复杂路况。", c:"28寸×3", d:"空间宽敞，适合长途跨城及山路驾驶。"}
+            {id:"SUBARU IMPREZA", p:"2-4人", l:"2.0L 水平对置引擎，全时四驱。", c:"28寸×1 + 24寸×1", d:"驾驶极其稳定，雨雪天气表现优秀。"},
+            {id:"HONDA FIT", p:"2-3人", l:"1.5L 动力，空间魔术师，视野极好。", c:"24寸×2 + 20寸×2", d:"同级别空间利用率最高，灵活穿梭。"},
+            {id:"TOYOTA AQUA", p:"2人", l:"1.5L 混动，极其省油，转向半径小。", c:"24寸×2 或 20寸×3", d:"适合 2 人深度游，好开车好停车。"},
+            {id:"TOYOTA YARIS", p:"2人", l:"1.5L 动力，TNGA 架构，操控灵活。", c:"24寸×1 + 20寸×2", d:"适合 1-2 人轻便出行，安全配置高。"},
+            {id:"NISSAN NOTE", p:"2-3人", l:"e-POWER 电驱技术，加速平顺。", c:"24寸×2 + 20寸×1", d:"内部空间略优于 Yaris，动力响应快。"},
+            {id:"ALPHARD 3代 黄金版", p:"6-7人", l:"2.5L/3.5L，豪华航空座椅，滤震极佳。", c:"28寸×4 或 20寸×8", d:"接送机明星车型，5人时空间最充裕。"},
+            {id:"ALPHARD 40系", p:"6人", l:"全新旗舰，更静谧，二排触控屏调节。", c:"28寸×4 或 20寸×6", d:"目前租车市场的顶级王牌，档次感最高。"},
+            {id:"TOYOTA SIENNA", p:"7人", l:"2.5L 混动，双侧滑门，超大纵向空间。", c:"28寸×5 + 20寸×2", d:"性价比之王，满载仍有极强装载力。"},
+            {id:"LEXUS LM", p:"4人", l:"顶级 4 座布局，车载冰箱，极致私密。", c:"28寸×4", d:"专为极致商务需求设计，顶奢体验。"},
+            {id:"BMW 5 SERIES TOURING", p:"4-5人", l:"旅行车身，操控精准，高速质感极佳。", c:"28寸×2 + 24寸×2", d:"后备箱开口大，品味自驾首选。"}
         ];
 
-        const sel = document.getElementById('carSelect');
+        const sel = document.getElementById('carSel');
         carData.forEach((item, index) => {
-            let opt = document.createElement('option');
-            opt.value = index; opt.textContent = item.id;
+            let opt = document.createElement('option'); opt.value = index; opt.textContent = item.id;
             sel.appendChild(opt);
         });
 
         function updateUI() {
-            const d = carData[sel.value];
-            if (!d) return;
-            document.getElementById('outTitle').innerText = d.id;
-            document.getElementById('outP').innerText = d.p;
-            document.getElementById('outL').innerText = d.l;
-            document.getElementById('outC').innerText = d.c;
-            document.getElementById('outD').innerText = d.d;
+            const d = carData[sel.value]; if (!d) return;
+            ['p', 'w'].forEach(s => {
+                document.getElementById('t-'+s).innerText = d.id;
+                document.getElementById('p-'+s).innerText = d.p;
+                document.getElementById('l-'+s).innerText = d.l;
+                document.getElementById('c-'+s).innerText = d.c;
+                document.getElementById('d-'+s).innerText = d.d;
+            });
         }
 
-        function loadPhotos(input) {
+        function loadImgs(input) {
             const files = Array.from(input.files);
-            const grid = document.getElementById('photo-grid');
-            grid.innerHTML = '';
-            const cnt = files.length;
-            grid.style.gridTemplateColumns = cnt >= 3 ? '1.5fr 1fr' : (cnt === 2 ? '1fr 1fr' : '1fr');
-            files.slice(0, 3).forEach((file, i) => {
-                const r = new FileReader();
-                r.onload = (e) => {
-                    const cell = document.createElement('div');
-                    cell.className = 'photo-cell';
-                    cell.style.backgroundImage = `url(${e.target.result})`;
-                    if(cnt >= 3 && i === 0) cell.style.gridRow = 'span 2';
-                    grid.appendChild(cell);
-                };
-                r.readAsDataURL(file);
+            ['pg-p', 'pg-w'].forEach(id => {
+                const grid = document.getElementById(id);
+                grid.innerHTML = '';
+                const cnt = files.length;
+                grid.style.gridTemplateColumns = cnt >= 3 ? '1.5fr 1fr' : (cnt === 2 ? '1fr 1fr' : '1fr');
+                files.slice(0, 3).forEach((file, i) => {
+                    const r = new FileReader();
+                    r.onload = (e) => {
+                        const cell = document.createElement('div');
+                        cell.className = 'photo-cell';
+                        cell.style.backgroundImage = `url(${e.target.result})`;
+                        if(cnt >= 3 && i === 0) cell.style.gridRow = 'span 2';
+                        grid.appendChild(cell);
+                    };
+                    r.readAsDataURL(file);
+                });
             });
         }
 
-        async function processPoster() {
-            if(!sel.value) { alert("请先选择车型"); return; }
-            const wrap = document.getElementById('poster-wrap');
+        async function process() {
+            if(!sel.value) { alert("请选择车型"); return; }
+            const lab = document.getElementById('render-lab');
+            const pre = document.getElementById('preview-box');
             
-            // 随机版式切换逻辑
-            wrap.classList.remove('tpl-a', 'tpl-b', 'tpl-c');
-            const styles = ['tpl-a', 'tpl-b', 'tpl-c'];
-            const randomStyle = styles[Math.floor(Math.random() * styles.length)];
-            wrap.classList.add(randomStyle);
+            // 随机版式
+            const idx = Math.floor(Math.random() * 3);
+            const tpls = ['tpl-a', 'tpl-b', 'tpl-c'];
+            const layouts = ['', 'tpl-b-layout', 'tpl-c-layout'];
+            
+            [lab, pre].forEach(el => {
+                el.className = tpls[idx] + ' ' + layouts[idx];
+            });
 
-            // 渲染高清图
-            html2canvas(wrap, { 
-                scale: 3.5, 
+            // 1:1 截取隐藏的 1200px 工作区，确保不失真
+            html2canvas(lab, { 
+                scale: 1, 
                 useCORS: true,
-                backgroundColor: null,
-                width: 375, height: 500
+                width: 1200, height: 1600
             }).then(canvas => {
-                const resImg = document.getElementById('result-img');
-                resImg.src = canvas.toDataURL("image/png", 1.0);
-                document.getElementById('download-overlay').style.display = "flex";
+                document.getElementById('res-img').src = canvas.toDataURL("image/png", 1.0);
+                document.getElementById('overlay').style.display = "flex";
             });
         }
 
-        function closeOverlay() {
-            document.getElementById('download-overlay').style.display = "none";
-        }
+        function closeO() { document.getElementById('overlay').style.display = "none"; }
     </script>
 </body>
 </html>
