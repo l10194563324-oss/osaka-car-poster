@@ -1,160 +1,437 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>大阪租车 · 极清海报工厂 v28</title>
-    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-    <style>
-        body { font-family: -apple-system, sans-serif; background: #F4F4F4; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
-        .controls { width: 100%; max-width: 375px; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 15px; box-sizing: border-box; }
-        select { width: 100%; padding: 12px; border: 1px solid #DDD; border-radius: 8px; font-size: 15px; margin-bottom: 12px; background: #FFF; outline: none; }
-        .btn-row { display: flex; gap: 8px; }
-        .btn { flex: 1; padding: 12px; border-radius: 8px; font-weight: bold; text-align: center; cursor: pointer; border: none; font-size: 14px; }
-        .btn-up { background: #EEE; color: #333; }
-        .btn-dl { background: #000; color: #FFF; }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<title>大阪租车 · 超清海报工厂</title>
 
-        /* 海报预览容器 - 严格锁定物理像素，防止拉伸 */
-        #poster-wrap { 
-            width: 375px; height: 500px; background: #FFF; 
-            display: flex; flex-direction: column; overflow: hidden; 
-            position: relative; flex-shrink: 0;
-        }
-        
-        /* 拼图区 - 强制不压缩显示 */
-        #photo-grid { width: 375px; height: 300px; display: grid; gap: 1px; background: #FFF; overflow: hidden; }
-        .photo-cell { width: 100%; height: 100%; background-position: center; background-size: cover; background-repeat: no-repeat; }
+<script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.js"></script>
 
-        /* 文字区 - 严格对应表格内容 */
-        .text-section { width: 375px; height: 200px; padding: 18px 22px; box-sizing: border-box; display: flex; flex-direction: column; background: #FFF; border-top: 1px solid #EEE; position: relative; }
-        .car-title { font-size: 21px; font-weight: 900; border-bottom: 3.5px solid #000; margin-bottom: 12px; width: fit-content; line-height: 1.1; color: #000; }
-        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .info-item b { font-size: 9px; color: #AAA; display: block; margin-bottom: 3px; letter-spacing: 0.5px; }
-        .info-item span { font-size: 10.5px; line-height: 1.4; color: #333; font-weight: 600; display: block; word-break: break-all; }
-        .footer { margin-top: auto; border-top: 1px solid #F5F5F5; padding-top: 6px; font-size: 8.5px; color: #CCC; display: flex; justify-content: space-between; font-weight: bold; }
+<style>
 
-        /* 下载弹窗 */
-        #download-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center; flex-direction: column; }
-        #result-img { width: 90%; max-height: 80%; border-radius: 8px; border: 2px solid #FFF; object-fit: contain; }
-        .overlay-tip { color: white; margin-top: 15px; font-size: 14px; font-weight: bold; }
-        .close-btn { position: absolute; top: 20px; right: 20px; color: white; font-size: 30px; font-weight: bold; cursor: pointer; }
-    </style>
+body{
+    margin:0;
+    padding:20px 0;
+    background:#f5f5f5;
+    font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+}
+
+/* 控制区 */
+
+.controls{
+    width:360px;
+    background:#fff;
+    padding:15px;
+    border-radius:14px;
+    box-shadow:0 4px 15px rgba(0,0,0,0.06);
+    margin-bottom:20px;
+    box-sizing:border-box;
+}
+
+select{
+    width:100%;
+    height:46px;
+    border-radius:10px;
+    border:1px solid #ddd;
+    padding:0 12px;
+    font-size:15px;
+    margin-bottom:12px;
+    outline:none;
+}
+
+.btn-row{
+    display:flex;
+    gap:10px;
+}
+
+.btn{
+    flex:1;
+    height:46px;
+    border:none;
+    border-radius:10px;
+    font-size:14px;
+    font-weight:700;
+    cursor:pointer;
+}
+
+.btn-up{
+    background:#eee;
+}
+
+.btn-dl{
+    background:#000;
+    color:#fff;
+}
+
+/* 预览缩放 */
+
+.preview-wrap{
+    width:375px;
+    overflow:hidden;
+}
+
+/* 真正高清海报 */
+
+#poster-wrap{
+    width:1242px;
+    height:1660px;
+    background:#fff;
+    overflow:hidden;
+
+    transform:scale(0.3017);
+    transform-origin:top left;
+
+    margin-bottom:-1158px;
+}
+
+/* 图片区 */
+
+#photo-grid{
+    width:1242px;
+    height:996px;
+    display:grid;
+    gap:4px;
+    background:#fff;
+}
+
+.photo-cell{
+    overflow:hidden;
+    position:relative;
+    background:#eee;
+}
+
+.photo-cell img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+}
+
+/* 文字区 */
+
+.text-section{
+    width:1242px;
+    height:664px;
+    box-sizing:border-box;
+    padding:60px 72px;
+    display:flex;
+    flex-direction:column;
+    border-top:2px solid #eee;
+}
+
+.car-title{
+    font-size:72px;
+    font-weight:900;
+    line-height:1.1;
+    border-bottom:8px solid #000;
+    width:fit-content;
+    margin-bottom:40px;
+}
+
+.info-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:36px;
+}
+
+.info-item b{
+    display:block;
+    font-size:24px;
+    color:#999;
+    margin-bottom:10px;
+    letter-spacing:1px;
+}
+
+.info-item span{
+    display:block;
+    font-size:32px;
+    line-height:1.7;
+    color:#222;
+    font-weight:600;
+}
+
+.footer{
+    margin-top:auto;
+    border-top:2px solid #f2f2f2;
+    padding-top:20px;
+    display:flex;
+    justify-content:space-between;
+    font-size:20px;
+    color:#bbb;
+    font-weight:700;
+}
+
+/* 下载弹窗 */
+
+#download-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.92);
+    display:none;
+    z-index:999;
+    justify-content:center;
+    align-items:center;
+    flex-direction:column;
+}
+
+#result-img{
+    width:90%;
+    max-height:85%;
+    object-fit:contain;
+    border-radius:12px;
+}
+
+.overlay-tip{
+    color:#fff;
+    margin-top:16px;
+    font-size:15px;
+    font-weight:700;
+}
+
+.close-btn{
+    position:absolute;
+    top:20px;
+    right:24px;
+    color:#fff;
+    font-size:38px;
+    cursor:pointer;
+}
+
+</style>
 </head>
+
 <body>
 
-    <div class="controls">
-        <select id="carSelect" onchange="updateUI()">
-            <option value="">-- 选择车型 (严格对齐表格) --</option>
-        </select>
-        <div class="btn-row">
-            <div class="btn btn-up" onclick="document.getElementById('fileIn').click()">📸 上传照片</div>
-            <div class="btn btn-dl" onclick="processPoster()">💾 生成高清海报</div>
-        </div>
-        <input type="file" id="fileIn" multiple accept="image/*" style="display:none" onchange="loadPhotos(this)">
+<div class="controls">
+
+    <select id="carSelect" onchange="updateUI()">
+        <option value="">-- 选择车型 --</option>
+    </select>
+
+    <div class="btn-row">
+        <button class="btn btn-up" onclick="fileIn.click()">上传照片</button>
+        <button class="btn btn-dl" onclick="processPoster()">生成高清海报</button>
     </div>
 
-    <div id="poster-wrap">
-        <div id="photo-grid"></div>
-        <div class="text-section">
-            <div class="car-title" id="outTitle">MODEL</div>
-            <div class="info-grid">
-                <div class="info-item"><b>载人数量 / GUESTS</b><span id="outP">-</span></div>
-                <div class="info-item"><b>性能特点 / FEATURES</b><span id="outL">-</span></div>
-                <div class="info-item"><b>行李装载能力 / CARGO</b><span id="outC">-</span></div>
-                <div class="info-item"><b>备注说明 / REMARK</b><span id="outD">-</span></div>
+    <input type="file" id="fileIn" multiple accept="image/*" style="display:none" onchange="loadPhotos(this)">
+
+</div>
+
+<div class="preview-wrap">
+
+<div id="poster-wrap">
+
+    <div id="photo-grid"></div>
+
+    <div class="text-section">
+
+        <div class="car-title" id="outTitle">MODEL</div>
+
+        <div class="info-grid">
+
+            <div class="info-item">
+                <b>载人数量 / GUESTS</b>
+                <span id="outP">-</span>
             </div>
-            <div class="footer"><span>PREMIUM RENTAL OSAKA</span><span>KANSAI DRIVE 2026</span></div>
+
+            <div class="info-item">
+                <b>性能特点 / FEATURES</b>
+                <span id="outL">-</span>
+            </div>
+
+            <div class="info-item">
+                <b>行李装载能力 / CARGO</b>
+                <span id="outC">-</span>
+            </div>
+
+            <div class="info-item">
+                <b>备注说明 / REMARK</b>
+                <span id="outD">-</span>
+            </div>
+
         </div>
+
+        <div class="footer">
+            <span>PREMIUM RENTAL OSAKA</span>
+            <span>KANSAI DRIVE 2026</span>
+        </div>
+
     </div>
 
-    <div id="download-overlay">
-        <span class="close-btn" onclick="closeOverlay()">×</span>
-        <img id="result-img" src="">
-        <div class="overlay-tip">↓↓ 长按图片 保存到相册 ↓↓</div>
+</div>
+
+</div>
+
+<div id="download-overlay">
+
+    <div class="close-btn" onclick="closeOverlay()">×</div>
+
+    <img id="result-img">
+
+    <div class="overlay-tip">
+        长按图片保存
     </div>
 
-    <script>
-        const carData = [
-            {id:"SUBARU IMPREZA", p:"2-4人", l:"2.0L 水平对置引擎，全时四驱，抓地力极强。", c:"28寸×1 + 24寸×1", d:"适合追求驾驶稳定性的用户，雨雪天气表现优秀。"},
-            {id:"HONDA FIT", p:"2-3人", l:"1.5L 动力，空间魔术师，视野好，市区穿梭灵活。", c:"24寸×2 + 20寸×2", d:"同级别空间利用率最高，后排座椅可向上折叠。"},
-            {id:"TOYOTA AQUA", p:"2人", l:"1.5L 混动，极其省油，转向半径小，好停车。", c:"24寸×2 或 20寸×3", d:"适合 2 人深度游，后排坐人后行李空间较局促。"},
-            {id:"TOYOTA YARIS", p:"2人", l:"1.5L 动力，TNGA 架构，操控灵活，安全配置高。", c:"24寸×1 + 20寸×2", d:"适合 1-2 人轻便出行，油耗表现极佳。"},
-            {id:"NISSAN NOTE", p:"2-3人", l:"e-POWER 电驱技术，加速平顺，行驶静谧。", c:"24寸×2 + 20寸×1", d:"内部空间略优于 Yaris，电机驱动动力响应快。"},
-            {id:"TOYOTA GR YARIS", p:"1-2人", l:"1.6T 四驱，WRC 拉力赛基因，钢炮级性能。", c:"20寸×2", d:"纯性能车，后备箱极小，不建议带大件行李。"},
-            {id:"ALPHARD 3代 黄金版", p:"6-7人", l:"2.5L/3.5L，豪华航空座椅，侧滑门，滤震极佳。", c:"28寸×4 或 20寸×8", d:"5 人状态下行李空间最充裕；坐满 7 人则空间极小。"},
-            {id:"ALPHARD 3代 SC版", p:"6-7人", l:"配置略高于黄金版，内饰更具质感，极致舒适。", c:"28寸×4 或 20寸×8", d:"大阪/京都接送机及长途包车的明星车型。"},
-            {id:"ALPHARD 40系", p:"6人", l:"全新 TNGA-K 平台，更静谧，二排触控屏调节。", c:"28寸×4 或 20寸×6", d:"目前租车市场的旗舰王牌，档次感最高。"},
-            {id:"VELLFIRE 40系", p:"6人", l:"运动化调教，外观更霸气，动力响应更积极。", c:"28寸×4 或 20寸×6", d:"适合追求个性与动力的高端商务/家庭用户。"},
-            {id:"TOYOTA SIENNA", p:"7人", l:"2.5L 混动，双侧滑门，超大纵向空间。", c:"28寸×5 + 20寸×2", d:"7 人满载时仍有极强的行李装载能力，性价比之王。"},
-            {id:"LEXUS LM", p:"4人", l:"顶级 4 座布局，车载冰箱，电视屏，极致私密。", c:"28寸×4", d:"专为极致商务需求设计，大阪市内顶奢接送。"},
-            {id:"LEXUS RX", p:"4-5人", l:"豪华 SUV 标杆，油电混动，内饰做工极细腻。", c:"28寸×2 + 20寸×2", d:"适合关西郊外自驾，驾驶视野好，品牌认可度高。"},
-            {id:"BMW 5 SERIES TOURING", p:"4-5人", l:"旅行车身，操控精准，高速巡航质感极佳。", c:"28寸×2 + 24寸×2", d:"后备箱开口大，适合追求品味与驾驶感的旅行者。"},
-            {id:"BENZ C-CLASS ESTATE", p:"2-4人", l:"优雅旅行版，精致内饰，转向轻盈，好开好停。", c:"28寸×2", d:"适合 2-3 人携带少量大件行李，市区游玩非常方便。"},
-            {id:"TOYOTA HIACE 9座", p:"9人", l:"2.8T 柴油，超强扭矩，最强空间利用率。", c:"28寸×8", d:"大团队、滑雪团、高尔夫团的唯一选择。"},
-            {id:"TOYOTA NOAH", p:"6-7人", l:"混动系统，低地台设计，上下车方便。", c:"28寸×3", d:"实用型 MPV，空间灵活，适合普通家庭日本自由行。"},
-            {id:"TOYOTA VOXY", p:"6-7人", l:"与 Noah 同平台，外观更犀利，LED 大灯组。", c:"28寸×3", d:"适合带小朋友的家庭，视野好且侧滑门安全方便。"},
-            {id:"BENZ V-CLASS", p:"6-7人", l:"德系商务风，空间方正，品牌气场强大。", c:"28寸×5", d:"行李空间表现优于埃尔法，适合高端商务组团。"},
-            {id:"BMW X5", p:"4-5人", l:"3.0T 动力，公路王者，四驱系统应对复杂路况。", c:"28寸×3", d:"空间宽敞，适合长途跨城及山路驾驶。"}
-        ];
+</div>
 
-        const sel = document.getElementById('carSelect');
-        carData.forEach((item, index) => {
-            let opt = document.createElement('option');
-            opt.value = index; opt.textContent = item.id;
-            sel.appendChild(opt);
-        });
+<script>
 
-        function updateUI() {
-            const d = carData[sel.value];
-            if (!d) return;
-            document.getElementById('outTitle').innerText = d.id;
-            document.getElementById('outP').innerText = d.p;
-            document.getElementById('outL').innerText = d.l;
-            document.getElementById('outC').innerText = d.c;
-            document.getElementById('outD').innerText = d.d;
+const carData = [
+
+    {
+        id:"TOYOTA SIENNA",
+        p:"7人",
+        l:"2.5L 混动，双侧滑门，超大空间",
+        c:"28寸×5 + 20寸×2",
+        d:"满载依然拥有优秀装载能力"
+    },
+
+    {
+        id:"ALPHARD 40系",
+        p:"6人",
+        l:"TNGA-K 平台，极致静谧",
+        c:"28寸×4",
+        d:"高端商务及家庭出行"
+    },
+
+    {
+        id:"NISSAN NOTE",
+        p:"2-3人",
+        l:"e-POWER 电驱技术",
+        c:"24寸×2",
+        d:"市区驾驶非常轻松"
+    }
+
+];
+
+const sel = document.getElementById('carSelect');
+
+carData.forEach((item,index)=>{
+
+    const opt = document.createElement('option');
+
+    opt.value = index;
+
+    opt.innerText = item.id;
+
+    sel.appendChild(opt);
+
+});
+
+function updateUI(){
+
+    const d = carData[sel.value];
+
+    if(!d) return;
+
+    outTitle.innerText = d.id;
+    outP.innerText = d.p;
+    outL.innerText = d.l;
+    outC.innerText = d.c;
+    outD.innerText = d.d;
+
+}
+
+function loadPhotos(input){
+
+    const files = Array.from(input.files);
+
+    const grid = document.getElementById('photo-grid');
+
+    grid.innerHTML = '';
+
+    const count = Math.min(files.length,3);
+
+    if(count === 1){
+
+        grid.style.gridTemplateColumns = '1fr';
+
+    }else if(count === 2){
+
+        grid.style.gridTemplateColumns = '1fr 1fr';
+
+    }else{
+
+        grid.style.gridTemplateColumns = '1.5fr 1fr';
+
+    }
+
+    files.slice(0,3).forEach((file,i)=>{
+
+        const reader = new FileReader();
+
+        reader.onload = function(e){
+
+            const cell = document.createElement('div');
+
+            cell.className = 'photo-cell';
+
+            if(count >=3 && i===0){
+
+                cell.style.gridRow = 'span 2';
+
+            }
+
+            const img = document.createElement('img');
+
+            img.src = e.target.result;
+
+            img.decoding = "sync";
+
+            img.loading = "eager";
+
+            cell.appendChild(img);
+
+            grid.appendChild(cell);
+
         }
 
-        function loadPhotos(input) {
-            const files = Array.from(input.files);
-            const grid = document.getElementById('photo-grid');
-            grid.innerHTML = '';
-            const cnt = files.length;
-            grid.style.gridTemplateColumns = cnt >= 3 ? '1.5fr 1fr' : (cnt === 2 ? '1fr 1fr' : '1fr');
-            files.slice(0, 3).forEach((file, i) => {
-                const r = new FileReader();
-                r.onload = (e) => {
-                    const cell = document.createElement('div');
-                    cell.className = 'photo-cell';
-                    cell.style.backgroundImage = `url(${e.target.result})`;
-                    if(cnt >= 3 && i === 0) cell.style.gridRow = 'span 2';
-                    grid.appendChild(cell);
-                };
-                r.readAsDataURL(file);
-            });
+        reader.readAsDataURL(file);
+
+    });
+
+}
+
+function processPoster(){
+
+    if(!sel.value){
+
+        alert('请先选择车型');
+
+        return;
+
+    }
+
+    htmlToImage.toPng(
+
+        document.getElementById('poster-wrap'),
+
+        {
+            pixelRatio:1,
+            cacheBust:true,
+            backgroundColor:'#ffffff'
         }
 
-        function processPoster() {
-            if(!sel.value) { alert("请先选择车型"); return; }
-            const overlay = document.getElementById('download-overlay');
-            const resImg = document.getElementById('result-img');
-            
-            // 28.0版核心：不再盲目追求高倍率，使用最稳健的 3.2 倍采样
-            // 配合锁定物理尺寸，防止手机内存超限导致的降质模糊
-            html2canvas(document.getElementById('poster-wrap'), { 
-                scale: 3.2, 
-                useCORS: true,
-                backgroundColor: "#FFFFFF",
-                width: 375,
-                height: 500
-            }).then(canvas => {
-                resImg.src = canvas.toDataURL("image/png", 1.0);
-                overlay.style.display = "flex";
-            });
-        }
+    ).then(function(dataUrl){
 
-        function closeOverlay() {
-            document.getElementById('download-overlay').style.display = "none";
-        }
-    </script>
+        document.getElementById('result-img').src = dataUrl;
+
+        document.getElementById('download-overlay').style.display = 'flex';
+
+    });
+
+}
+
+function closeOverlay(){
+
+    document.getElementById('download-overlay').style.display = 'none';
+
+}
+
+</script>
+
 </body>
 </html>
