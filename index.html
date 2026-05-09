@@ -3,92 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>大阪租车 · 4K超清海报工厂</title>
+    <title>大阪租车 · 官方海报工厂</title>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <style>
-        body { font-family: -apple-system, "PingFang SC", sans-serif; background: #F4F4F4; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
-        .controls { width: 100%; max-width: 375px; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 15px; box-sizing: border-box; }
+        body { font-family: -apple-system, sans-serif; background: #F4F4F4; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
+        .controls { width: 100%; max-width: 375px; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-bottom: 15px; box-sizing: border-box; }
         select { width: 100%; padding: 12px; border: 1px solid #DDD; border-radius: 8px; font-size: 15px; margin-bottom: 12px; background: #FFF; outline: none; }
         .btn-row { display: flex; gap: 8px; }
         .btn { flex: 1; padding: 12px; border-radius: 8px; font-weight: bold; text-align: center; cursor: pointer; border: none; font-size: 14px; }
-        .btn-up { background: #EEE; color: #333; }
+        .btn-up { background: #E9E9E9; color: #333; }
         .btn-dl { background: #000; color: #FFF; }
 
-        /* 预览区：仅用于显示，不用于截图 */
-        #poster-preview { 
+        /* 预览区 - 严格固定比例 */
+        #poster-wrap { 
             width: 375px; height: 500px; background: #FFF; 
             display: flex; flex-direction: column; overflow: hidden; 
-            position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
-
-        /* 隐藏的离屏工作区：用于生成超高清大图 (1200x1600) */
-        #offscreen-workplace { 
-            position: absolute; left: -9999px; top: 0;
-            width: 1200px; height: 1600px; background: #FFF; 
-            display: flex; flex-direction: column; 
+            position: relative; flex-shrink: 0;
         }
         
-        .photo-grid { width: 100%; height: 60%; display: grid; gap: 4px; background: #FFF; overflow: hidden; }
+        #photo-grid { width: 100%; height: 60%; display: grid; gap: 1px; background: #FFF; overflow: hidden; }
         .photo-cell { width: 100%; height: 100%; background-position: center; background-size: cover; background-repeat: no-repeat; }
 
-        .text-section { width: 100%; height: 40%; box-sizing: border-box; display: flex; flex-direction: column; background: #FFF; border-top: 2px solid #EEE; }
-        
-        /* 预览区文字尺寸 */
-        #poster-preview .text-section { padding: 18px 22px; }
-        #poster-preview .car-title { font-size: 21px; font-weight: 900; border-bottom: 3.5px solid #000; margin-bottom: 12px; width: fit-content; line-height: 1.1; }
-        #poster-preview .info-item b { font-size: 9px; color: #AAA; display: block; margin-bottom: 3px; }
-        #poster-preview .info-item span { font-size: 10px; line-height: 1.4; color: #333; font-weight: 600; display: block; }
+        .text-section { width: 100%; height: 40%; padding: 18px 22px; box-sizing: border-box; display: flex; flex-direction: column; background: #FFF; border-top: 1px solid #EEE; position: relative; }
+        .car-title { font-size: 21px; font-weight: 900; border-bottom: 3.5px solid #000; margin-bottom: 12px; width: fit-content; line-height: 1.1; color: #000; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .info-item b { font-size: 9px; color: #AAA; display: block; margin-bottom: 3px; letter-spacing: 0.5px; }
+        .info-item span { font-size: 10.5px; line-height: 1.4; color: #333; font-weight: 600; display: block; word-break: break-all; }
+        .footer { margin-top: auto; border-top: 1px solid #F5F5F5; padding-top: 6px; font-size: 8.5px; color: #CCC; display: flex; justify-content: space-between; font-weight: bold; }
 
-        /* 离屏大图文字尺寸 (4倍大) */
-        #offscreen-workplace .text-section { padding: 72px 88px; }
-        #offscreen-workplace .car-title { font-size: 84px; font-weight: 900; border-bottom: 14px solid #000; margin-bottom: 48px; width: fit-content; line-height: 1.1; }
-        #offscreen-workplace .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
-        #offscreen-workplace .info-item b { font-size: 36px; color: #AAA; display: block; margin-bottom: 12px; }
-        #offscreen-workplace .info-item span { font-size: 40px; line-height: 1.4; color: #333; font-weight: 600; display: block; }
-        #offscreen-workplace .footer { margin-top: auto; border-top: 4px solid #F5F5F5; padding-top: 24px; font-size: 32px; color: #CCC; display: flex; justify-content: space-between; font-weight: bold; }
-
-        /* 下载弹窗 */
-        #download-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; justify-content: center; align-items: center; flex-direction: column; }
-        #result-img { width: 90%; max-height: 80%; border-radius: 8px; border: 2px solid #FFF; }
-        .overlay-tip { color: white; margin-top: 15px; font-size: 14px; font-weight: bold; }
-        .close-btn { position: absolute; top: 20px; right: 20px; color: white; font-size: 30px; cursor: pointer; }
+        /* 下载弹窗：解决手机失真和拦截的核心 */
+        #download-overlay { 
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.95); z-index: 9999; 
+            flex-direction: column; align-items: center; justify-content: center;
+        }
+        #result-img { width: 85%; max-height: 80%; border: 3px solid white; border-radius: 4px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        .overlay-hint { color: white; margin-top: 20px; font-size: 14px; font-weight: bold; }
+        .close-btn { position: absolute; top: 30px; right: 30px; color: white; font-size: 40px; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <div class="controls">
         <select id="carSelect" onchange="updateUI()">
-            <option value="">-- 选择车型 (严格对齐表格) --</option>
+            <option value="">-- 点击选择车型 (20款) --</option>
         </select>
         <div class="btn-row">
-            <div class="btn btn-up" onclick="document.getElementById('fileIn').click()">📸 上传照片</div>
-            <div class="btn btn-dl" onclick="processPoster()">💾 生成4K海报</div>
+            <div class="btn btn-up" onclick="document.getElementById('fileIn').click()">📸 传图</div>
+            <div class="btn btn-dl" id="dlBtn" onclick="processPoster()">✨ 生成高清海报</div>
         </div>
         <input type="file" id="fileIn" multiple accept="image/*" style="display:none" onchange="loadPhotos(this)">
     </div>
 
-    <div id="poster-preview">
-        <div class="photo-grid" id="grid-preview"></div>
+    <div id="poster-wrap">
+        <div id="photo-grid"></div>
         <div class="text-section">
-            <div class="car-title" id="outTitle-p">MODEL</div>
-            <div class="info-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <div class="info-item"><b>载人数量 / GUESTS</b><span id="outP-p">-</span></div>
-                <div class="info-item"><b>性能特点 / FEATURES</b><span id="outL-p">-</span></div>
-                <div class="info-item"><b>行李装载能力 / CARGO</b><span id="outC-p">-</span></div>
-                <div class="info-item"><b>备注说明 / REMARK</b><span id="outD-p">-</span></div>
-            </div>
-        </div>
-    </div>
-
-    <div id="offscreen-workplace">
-        <div class="photo-grid" id="grid-work"></div>
-        <div class="text-section">
-            <div class="car-title" id="outTitle-w">MODEL</div>
+            <div class="car-title" id="outTitle">SELECT MODEL</div>
             <div class="info-grid">
-                <div class="info-item"><b>载人数量 / GUESTS</b><span id="outP-w">-</span></div>
-                <div class="info-item"><b>性能特点 / FEATURES</b><span id="outL-w">-</span></div>
-                <div class="info-item"><b>行李装载能力 / CARGO</b><span id="outC-w">-</span></div>
-                <div class="info-item"><b>备注说明 / REMARK</b><span id="outD-w">-</span></div>
+                <div class="info-item"><b>载人数量 / GUESTS</b><span id="outP">-</span></div>
+                <div class="info-item"><b>性能特点 / FEATURES</b><span id="outL">-</span></div>
+                <div class="info-item"><b>行李装载能力 / CARGO</b><span id="outC">-</span></div>
+                <div class="info-item"><b>备注说明 / REMARK</b><span id="outD">-</span></div>
             </div>
             <div class="footer"><span>PREMIUM RENTAL OSAKA</span><span>KANSAI DRIVE 2026</span></div>
         </div>
@@ -97,7 +72,7 @@
     <div id="download-overlay">
         <span class="close-btn" onclick="closeOverlay()">×</span>
         <img id="result-img" src="">
-        <div class="overlay-tip">↓↓ 长按图片 保存到相册 ↓↓</div>
+        <div class="overlay-hint">↓↓ 长按上方海报 保存到相册 ↓↓</div>
     </div>
 
     <script>
@@ -134,69 +109,57 @@
         function updateUI() {
             const d = carData[sel.value];
             if (!d) return;
-            // 更新预览
-            document.getElementById('outTitle-p').innerText = d.id;
-            document.getElementById('outP-p').innerText = d.p;
-            document.getElementById('outL-p').innerText = d.l;
-            document.getElementById('outC-p').innerText = d.c;
-            document.getElementById('outD-p').innerText = d.d;
-            // 更新隐藏工作区
-            document.getElementById('outTitle-w').innerText = d.id;
-            document.getElementById('outP-w').innerText = d.p;
-            document.getElementById('outL-w').innerText = d.l;
-            document.getElementById('outC-w').innerText = d.c;
-            document.getElementById('outD-w').innerText = d.d;
+            document.getElementById('outTitle').innerText = d.id;
+            document.getElementById('outP').innerText = d.p;
+            document.getElementById('outL').innerText = d.l;
+            document.getElementById('outC').innerText = d.c;
+            document.getElementById('outD').innerText = d.d;
         }
 
         function loadPhotos(input) {
             const files = Array.from(input.files);
-            const gridP = document.getElementById('grid-preview');
-            const gridW = document.getElementById('grid-work');
-            gridP.innerHTML = ''; gridW.innerHTML = '';
+            const grid = document.getElementById('photo-grid');
+            grid.innerHTML = '';
             const cnt = files.length;
-            
-            const layout = cnt >= 3 ? '1.5fr 1fr' : (cnt === 2 ? '1fr 1fr' : '1fr');
-            gridP.style.gridTemplateColumns = layout;
-            gridW.style.gridTemplateColumns = layout;
-
+            grid.style.gridTemplateColumns = cnt >= 3 ? '1.5fr 1fr' : (cnt === 2 ? '1fr 1fr' : '1fr');
             files.slice(0, 3).forEach((file, i) => {
                 const r = new FileReader();
                 r.onload = (e) => {
-                    const cellP = document.createElement('div');
-                    const cellW = document.createElement('div');
-                    cellP.className = 'photo-cell'; cellW.className = 'photo-cell';
-                    cellP.style.backgroundImage = `url(${e.target.result})`;
-                    cellW.style.backgroundImage = `url(${e.target.result})`;
-                    
-                    if(cnt >= 3 && i === 0) {
-                        cellP.style.gridRow = 'span 2';
-                        cellW.style.gridRow = 'span 2';
-                    }
-                    gridP.appendChild(cellP);
-                    gridW.appendChild(cellW);
+                    const cell = document.createElement('div');
+                    cell.className = 'photo-cell';
+                    cell.style.backgroundImage = `url(${e.target.result})`;
+                    if(cnt >= 3 && i === 0) cell.style.gridRow = 'span 2';
+                    grid.appendChild(cell);
                 };
                 r.readAsDataURL(file);
             });
         }
 
-        function processPoster() {
-            if(!sel.value) { alert("请先选择车型"); return; }
-            const overlay = document.getElementById('download-overlay');
-            const resImg = document.getElementById('result-img');
+        async function processPoster() {
+            if(!sel.value) { alert('请先选择车型'); return; }
+            const btn = document.getElementById('dlBtn');
+            btn.innerText = "⏳ 正在生成...";
             
-            // 关键：不再使用预览区截图，而是截取 1200x1600 的工作区
-            html2canvas(document.getElementById('offscreen-workplace'), { 
-                scale: 1, // 已经是超大尺寸，无需再放缩，防止内存溢出
+            const node = document.getElementById('poster-wrap');
+            // 核心修复：不再强行设定 canvas 尺寸，而是通过像素倍率让系统自动计算物理对齐
+            html2canvas(node, {
+                scale: 3, // 保持在 3 倍，这是手机端不失真的黄金比例
                 useCORS: true,
-                backgroundColor: "#FFFFFF"
+                backgroundColor: "#FFFFFF",
+                logging: false
             }).then(canvas => {
-                resImg.src = canvas.toDataURL("image/png", 1.0);
-                overlay.style.display = "flex";
+                const img = document.getElementById('result-img');
+                img.src = canvas.toDataURL("image/png", 1.0);
+                document.getElementById('download-overlay').style.display = 'flex';
+                btn.innerText = "✨ 生成高清海报";
+            }).catch(e => {
+                alert("生成失败，请刷新重试");
+                console.error(e);
             });
         }
 
         function closeOverlay() {
-            document.getElementById('download-overlay').style.display = "none";
+            document.getElementById('download-overlay').style.display = 'none';
         }
     </script>
 </body>
