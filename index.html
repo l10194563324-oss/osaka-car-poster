@@ -3,48 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>大阪租车 · 官方海报工厂</title>
+    <title>大阪租车 · 高清海报工坊</title>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <style>
-        body { font-family: -apple-system, sans-serif; background: #F0F0F0; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
-        
-        /* UI 操作区 */
-        .controls { width: 100%; max-width: 400px; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-bottom: 15px; box-sizing: border-box; }
-        select { width: 100%; padding: 12px; border: 1px solid #DDD; border-radius: 8px; font-size: 15px; margin-bottom: 12px; background: #FFF; outline: none; }
+        body { font-family: -apple-system, sans-serif; background: #F4F4F4; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
+        .controls { width: 100%; max-width: 400px; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 15px; box-sizing: border-box; }
+        select { width: 100%; padding: 12px; border: 1px solid #DDD; border-radius: 8px; font-size: 15px; margin-bottom: 12px; background: #FFF; outline: none; -webkit-appearance: none; }
         .btn-row { display: flex; gap: 8px; }
         .btn { flex: 1; padding: 12px; border-radius: 8px; font-weight: bold; text-align: center; cursor: pointer; border: none; font-size: 14px; }
-        .btn-up { background: #E9E9E9; color: #333; }
+        .btn-up { background: #EEE; color: #333; border: 1px dashed #AAA; }
         .btn-dl { background: #000; color: #FFF; }
 
-        /* 海报画布 (3:4) */
-        #poster-wrap { 
-            width: 375px; height: 500px; background: #FFF; 
-            display: flex; flex-direction: column; overflow: hidden; 
-            position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
-        
-        /* 拼图区 - 保持比例不拉伸 */
+        /* 海报预览 */
+        #poster-wrap { width: 375px; height: 500px; background: #FFF; display: flex; flex-direction: column; overflow: hidden; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
         #photo-grid { width: 100%; height: 60%; display: grid; gap: 1px; background: #FFF; overflow: hidden; }
-        .grid-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .photo-cell { width: 100%; height: 100%; background-position: center; background-size: cover; background-repeat: no-repeat; }
 
-        /* 文字区 - 严格对应表格 */
-        .text-section { width: 100%; height: 40%; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; background: #FFF; border-top: 1px solid #EEE; position: relative; }
+        /* 文字区 - 严格对应表格内容 */
+        .text-section { width: 100%; height: 40%; padding: 18px 22px; box-sizing: border-box; display: flex; flex-direction: column; background: #FFF; border-top: 1px solid #EEE; position: relative; }
         .car-title { font-size: 21px; font-weight: 900; border-bottom: 3.5px solid #000; margin-bottom: 12px; width: fit-content; line-height: 1.1; color: #000; }
         .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .info-item b { font-size: 9px; color: #AAA; display: block; margin-bottom: 3px; letter-spacing: 0.5px; }
         .info-item span { font-size: 10.5px; line-height: 1.4; color: #333; font-weight: 600; display: block; word-break: break-all; }
         .footer { margin-top: auto; border-top: 1px solid #F5F5F5; padding-top: 6px; font-size: 8.5px; color: #CCC; display: flex; justify-content: space-between; font-weight: bold; }
+
+        /* 强制全屏预览弹窗（破解手机下载拦截） */
+        #download-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center; flex-direction: column; }
+        #result-img { width: 90%; max-height: 80%; border-radius: 8px; border: 3px solid #FFF; }
+        .overlay-tip { color: white; margin-top: 15px; font-size: 14px; font-weight: bold; }
+        .close-btn { position: absolute; top: 20px; right: 20px; color: white; font-size: 30px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <div class="controls">
         <select id="carSelect" onchange="updateUI()">
-            <option value="">-- 请选择车型 (20款在庫) --</option>
+            <option value="">-- 请选择车型 --</option>
         </select>
         <div class="btn-row">
-            <div class="btn btn-up" onclick="document.getElementById('fileIn').click()">📸 上传实拍图</div>
-            <div class="btn btn-dl" id="downloadBtn" onclick="downloadPoster()">💾 点击下载海报</div>
+            <div class="btn btn-up" onclick="document.getElementById('fileIn').click()">📸 传图</div>
+            <div class="btn btn-dl" onclick="processPoster()">💾 点击生成海报</div>
         </div>
         <input type="file" id="fileIn" multiple accept="image/*" style="display:none" onchange="loadPhotos(this)">
     </div>
@@ -54,7 +52,7 @@
         <div class="text-section">
             <div class="car-title" id="outTitle">SELECT MODEL</div>
             <div class="info-grid">
-                <div class="info-item"><b>建议人数 / GUESTS</b><span id="outP">-</span></div>
+                <div class="info-item"><b>载人数量 / GUESTS</b><span id="outP">-</span></div>
                 <div class="info-item"><b>性能特点 / FEATURES</b><span id="outL">-</span></div>
                 <div class="info-item"><b>载物能力 / CARGO</b><span id="outC">-</span></div>
                 <div class="info-item"><b>备注说明 / REMARK</b><span id="outD">-</span></div>
@@ -63,8 +61,13 @@
         </div>
     </div>
 
+    <div id="download-overlay">
+        <span class="close-btn" onclick="closeOverlay()">×</span>
+        <img id="result-img" src="">
+        <div class="overlay-tip">↓↓ 长按上方图片 保存到手机 ↓↓</div>
+    </div>
+
     <script>
-        // 严格按照您的 CSV 表格录入 20 辆车
         const carData = [
             {id:"SUBARU IMPREZA", p:"2-4人", l:"2.0L 水平对置引擎，全时四驱，抓地力极强。", c:"28寸×1 + 24寸×1", d:"适合追求驾驶稳定性的用户，雨雪天气表现优秀。"},
             {id:"HONDA FIT", p:"2-3人", l:"1.5L 动力，空间魔术师，视野好，市区穿梭灵活。", c:"24寸×2 + 20寸×2", d:"同级别空间利用率最高，后排座椅可向上折叠。"},
@@ -114,43 +117,34 @@
             files.slice(0, 3).forEach((file, i) => {
                 const r = new FileReader();
                 r.onload = (e) => {
-                    const img = document.createElement('img');
-                    img.src = e.target.result;
-                    img.className = 'grid-img';
-                    if(cnt >= 3 && i === 0) img.style.gridRow = 'span 2';
-                    grid.appendChild(img);
+                    const cell = document.createElement('div');
+                    cell.className = 'photo-cell';
+                    cell.style.backgroundImage = `url(${e.target.result})`;
+                    if(cnt >= 3 && i === 0) cell.style.gridRow = 'span 2';
+                    grid.appendChild(cell);
                 };
                 r.readAsDataURL(file);
             });
         }
 
-        function downloadPoster() {
-            if(!sel.value) { alert("请先选择车型！"); return; }
-            const btn = document.getElementById('downloadBtn');
-            btn.innerText = "⏳ 正在生成高清图...";
+        function processPoster() {
+            if(!sel.value) { alert("请先选择车型"); return; }
+            const overlay = document.getElementById('download-overlay');
+            const resImg = document.getElementById('result-img');
             
-            // 解决失真与下载的核心配置
+            // 核心修复：高倍渲染解决失真，弹窗解决下载拦截
             html2canvas(document.getElementById('poster-wrap'), { 
-                scale: 4, // 强制 4 倍高清采样，拒绝失真
+                scale: 4, 
                 useCORS: true,
                 backgroundColor: "#FFFFFF"
             }).then(canvas => {
-                // 将画布转为高清 PNG
-                const imgData = canvas.toDataURL("image/png", 1.0);
-                // 创建虚拟下载锚点
-                const link = document.createElement('a');
-                link.href = imgData;
-                link.download = `大阪租车-${document.getElementById('outTitle').innerText}.png`;
-                // 模拟点击下载
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                
-                btn.innerText = "💾 点击下载海报";
-            }).catch(err => {
-                alert("下载失败，请尝试在浏览器中打开网址。");
-                btn.innerText = "💾 点击下载海报";
+                resImg.src = canvas.toDataURL("image/png", 1.0);
+                overlay.style.display = "flex";
             });
+        }
+
+        function closeOverlay() {
+            document.getElementById('download-overlay').style.display = "none";
         }
     </script>
 </body>
