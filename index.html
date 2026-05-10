@@ -9,7 +9,6 @@
         :root { --accent: #1A3C6E; --bg: #FFF; --text: #000; --label: #1A3C6E; }
         body { font-family: -apple-system, "PingFang SC", sans-serif; background: #EEE; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
         
-        /* UI 操作区 */
         .controls { width: 100%; max-width: 375px; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-bottom: 15px; box-sizing: border-box; }
         h1 { font-size: 16px; margin: 0 0 15px 0; color: #333; text-align: center; }
         select { width: 100%; padding: 12px; border: 1px solid #DDD; border-radius: 8px; font-size: 14px; margin-bottom: 12px; background: #FFF; outline: none; }
@@ -28,24 +27,22 @@
         /* 预览适配 */
         #preview-wrapper { width: 375px; height: 500px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1); background: #FFF; border-radius: 8px; }
         #preview-box { transform: scale(0.3125); transform-origin: top left; }
-
-        /* 渲染实验室 */
         #render-lab { position: absolute; left: -9999px; top: 0; }
 
         /* 通用拼图布局 */
         .photo-grid { width: 100%; height: 1050px; display: grid; gap: 4px; background: #F8F8F8; overflow: hidden; flex-shrink: 0; }
         .photo-cell { width: 100%; height: 100%; background-position: center; background-size: cover; background-repeat: no-repeat; }
-        .text-section { width: 100%; flex: 1; padding: 60px 80px; box-sizing: border-box; display: flex; flex-direction: column; position: relative; }
+        
+        .text-section { width: 100%; flex: 1; padding: 60px 80px 100px 80px; box-sizing: border-box; display: flex; flex-direction: column; position: relative; }
         .car-title { font-weight: 900; color: var(--text); font-size: 80px; border-bottom: 15px solid #000; margin-bottom: 40px; width: fit-content; white-space: nowrap; }
 
-        /* 版式 2: 复古蓝调 (MZ.Auto 特供) */
+        /* 版式 2: 复古蓝调 */
         .tpl-2 { --bg: #F0F4F8; --text: #1A3C6E; --accent: #1A3C6E; background: var(--bg); }
         .tpl-2 .top-header { height: 260px; width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; border-bottom: 8px solid var(--accent); padding: 0 40px; box-sizing: border-box; }
-        .tpl-2 .top-header .big-title { font-size: 120px; font-weight: 900; color: var(--accent); text-align: center; white-space: nowrap; overflow: hidden; width: 100%; }
+        .tpl-2 .top-header .big-title { font-size: 96px; font-weight: 900; color: var(--accent); text-align: center; white-space: nowrap; overflow: hidden; width: 100%; }
         .tpl-2 .deco-strip { height: 80px; width: 100%; border-bottom: 4px solid var(--accent); display: flex; align-items: center; justify-content: space-between; padding: 0 60px; box-sizing: border-box; font-size: 28px; font-weight: bold; color: var(--accent); }
         .tpl-2 .photo-grid { height: 800px; padding: 30px; box-sizing: border-box; background: var(--bg); }
-        .tpl-2 .text-section { margin: 0 40px 40px 40px; border-top: 8px solid var(--accent); padding-top: 50px; flex: 1; }
-        .tpl-2 .info-item b { color: var(--accent); }
+        .tpl-2 .text-section { margin: 0 40px; padding: 50px 40px 100px 40px; border-top: 8px solid var(--accent); flex: 1; }
 
         /* 版式 3: 反转布局 */
         .tpl-3 { flex-direction: column-reverse !important; }
@@ -54,15 +51,23 @@
         .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
         .info-item b { display: block; font-size: 32px; margin-bottom: 12px; color: #999; }
         .info-item span { display: block; font-size: 38px; font-weight: 700; color: var(--text); line-height: 1.4; word-break: break-all; }
+        .tpl-2 .info-item b { color: var(--accent); }
         
-        /* 日期底部居中 */
-        .date-center { 
-            position: absolute; bottom: 40px; left: 0; width: 100%; 
-            text-align: center; font-size: 30px; font-weight: 900; color: #BBB; letter-spacing: 2px;
+        /* 强制日期底部居中逻辑 */
+        .date-center-fixed { 
+            position: absolute; 
+            bottom: 30px; 
+            left: 0; 
+            width: 100%; 
+            text-align: center; 
+            font-size: 32px; 
+            font-weight: 900; 
+            color: #BBB; 
+            letter-spacing: 3px;
+            z-index: 100;
         }
-        .tpl-2 .date-center { color: var(--accent); opacity: 0.9; }
+        .tpl-2 .date-center-fixed { color: var(--accent); opacity: 0.8; }
 
-        /* 弹窗层 */
         #overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; justify-content: center; align-items: center; flex-direction: column; }
         #res-img { width: 85%; max-height: 80%; border: 3px solid #FFF; border-radius: 4px; }
         .close { position: absolute; top: 20px; right: 20px; color: white; font-size: 40px; cursor: pointer; }
@@ -95,8 +100,8 @@
                     <div class="info-item"><b>载物空间</b><span id="c-p">-</span></div>
                     <div class="info-item"><b>备注说明</b><span id="d-p">-</span></div>
                 </div>
-                <div class="date-center today-date">2026.05.09</div>
             </div>
+            <div class="date-center-fixed today-date">2026.05.09</div>
         </div>
     </div>
 
@@ -112,14 +117,14 @@
                 <div class="info-item"><b>载物空间 / CARGO</b><span id="c-w">-</span></div>
                 <div class="info-item"><b>备注说明 / REMARK</b><span id="d-w">-</span></div>
             </div>
-            <div class="date-center today-date">2026.05.09</div>
         </div>
+        <div class="date-center-fixed today-date">2026.05.09</div>
     </div>
 
     <div id="overlay">
         <span class="close" onclick="closeO()">×</span>
         <img id="res-img" src="">
-        <div style="color:white;margin-top:15px;font-weight:bold;">↓↓ 生成成功！长按保存居中日期海报 ↓↓</div>
+        <div style="color:white;margin-top:15px;font-weight:bold;">↓↓ 生成成功！日期已统一底部居中 ↓↓</div>
     </div>
 
     <script>
@@ -142,4 +147,73 @@
             {id:"TOYOTA HIACE 9座", p:"9人", l:"2.8T 柴油，最强利用率。", c:"28寸×8", d:"大团队、滑雪、高尔夫团唯一选择。"},
             {id:"TOYOTA NOAH", p:"6-7人", l:"混动系统，低地台设计。", c:"28寸×3", d:"实用型 MPV，适合家庭自由行。"},
             {id:"TOYOTA VOXY", p:"6-7人", l:"外观犀利，LED 大灯。", c:"28寸×3", d:"侧滑门方便，适合亲子旅行。"},
-            {id:"BENZ V-CLASS", p:"6-7人", l:"德系商务，空间方正。", c:"28寸×5", d:"
+            {id:"BENZ V-CLASS", p:"6-7人", l:"德系商务，空间方正。", c:"28寸×5", d:"气场强大，装载力优于埃尔法。"},
+            {id:"BMW X5", p:"4-5人", l:"3.0T 动力，公路王者。", c:"28寸×3", d:"长途自驾首选，应对复杂路况。"}
+        ];
+
+        const sel = document.getElementById('carSel');
+        carData.forEach((item, index) => {
+            let opt = document.createElement('option'); opt.value = index; opt.textContent = item.id;
+            sel.appendChild(opt);
+        });
+
+        function setDate() {
+            const now = new Date();
+            const dateStr = now.getFullYear() + '.' + String(now.getMonth() + 1).padStart(2, '0') + '.' + String(now.getDate()).padStart(2, '0');
+            document.querySelectorAll('.today-date').forEach(e => e.innerText = dateStr);
+        }
+        setDate();
+
+        function updateUI() {
+            const d = carData[sel.value]; if (!d) return;
+            document.querySelectorAll('.big-title').forEach(e => e.innerText = d.id);
+            document.querySelectorAll('.car-title').forEach(e => e.innerText = d.id);
+            ['p', 'w'].forEach(s => {
+                document.getElementById('p-'+s).innerText = d.p;
+                document.getElementById('l-'+s).innerText = d.l;
+                document.getElementById('c-'+s).innerText = d.c;
+                document.getElementById('d-'+s).innerText = d.d;
+            });
+        }
+
+        function loadImgs(input) {
+            const files = Array.from(input.files);
+            ['pg-p', 'pg-w'].forEach(gridId => {
+                const grid = document.getElementById(gridId); grid.innerHTML = '';
+                const cnt = files.length;
+                grid.style.gridTemplateColumns = cnt >= 3 ? '1.4fr 1fr' : (cnt === 2 ? '1fr 1fr' : '1fr');
+                files.slice(0, 3).forEach((file, i) => {
+                    const r = new FileReader();
+                    r.onload = (e) => {
+                        const cell = document.createElement('div'); cell.className = 'photo-cell';
+                        cell.style.backgroundImage = `url(${e.target.result})`;
+                        if(cnt >= 3 && i === 0) cell.style.gridRow = 'span 2';
+                        grid.appendChild(cell);
+                    };
+                    r.readAsDataURL(file);
+                });
+            });
+        }
+
+        async function process() {
+            if(!sel.value) { alert("请选择车型"); return; }
+            const lab = document.getElementById('render-lab');
+            const pre = document.getElementById('preview-box');
+            const idx = Math.floor(Math.random() * 3) + 1;
+            [lab, pre].forEach(el => {
+                el.classList.remove('tpl-1', 'tpl-2', 'tpl-3');
+                el.classList.add('tpl-' + idx);
+                const isT2 = (idx === 2);
+                el.querySelectorAll('.top-header, .deco-strip').forEach(sub => sub.style.display = isT2 ? 'flex' : 'none');
+                const carT = el.querySelector('.text-section .car-title');
+                if(carT) carT.style.display = isT2 ? 'none' : 'block';
+            });
+            html2canvas(lab, { scale: 1, useCORS: true, width: 1200, height: 1600 }).then(canvas => {
+                document.getElementById('res-img').src = canvas.toDataURL("image/png", 1.0);
+                document.getElementById('overlay').style.display = "flex";
+            });
+        }
+        function closeO() { document.getElementById('overlay').style.display = "none"; }
+    </script>
+</body>
+</html>
