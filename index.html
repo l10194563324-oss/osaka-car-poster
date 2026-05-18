@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>MZ.Auto 大阪租车 · SNS海报生成</title>
-    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js" crossorigin="anonymous"></script>
     <style>
         :root { --accent: #1A3C6E; --bg: #FFF; --text: #000; }
         body { font-family: -apple-system, "PingFang SC", sans-serif; background: #EEE; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
@@ -12,6 +12,12 @@
         .controls { width: 100%; max-width: 375px; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-bottom: 15px; box-sizing: border-box; }
         h1 { font-size: 16px; margin: 0 0 15px 0; color: #333; text-align: center; }
         select { width: 100%; padding: 12px; border: 1px solid #DDD; border-radius: 8px; font-size: 14px; margin-bottom: 12px; background: #FFF; outline: none; }
+        
+        /* 💡 手动价格输入框样式 */
+        .price-input-wrapper { margin-bottom: 12px; }
+        .price-input-wrapper input { width: 100%; padding: 12px; border: 1px solid #DDD; border-radius: 8px; font-size: 14px; box-sizing: border-box; background: #FFF; outline: none; }
+        .price-input-wrapper input:focus { border-color: #888; }
+
         .btn-row { display: flex; gap: 8px; }
         .btn { flex: 1; padding: 12px; border-radius: 8px; font-weight: bold; text-align: center; cursor: pointer; border: none; font-size: 13px; }
         .btn-up { background: #F0F0F0; color: #333; }
@@ -34,7 +40,13 @@
         .photo-cell { width: 100%; height: 100%; background-position: center; background-size: cover; background-repeat: no-repeat; }
         
         .text-section { width: 100%; flex: 1; padding: 60px 80px 100px 80px; box-sizing: border-box; display: flex; flex-direction: column; position: relative; }
-        .car-title { font-weight: 900; color: #000; font-size: 80px; border-bottom: 15px solid #000; margin-bottom: 40px; width: fit-content; white-space: nowrap; }
+        
+        /* 布局优化：让标题和价格在一行优雅错开 */
+        .title-row { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 15px solid #000; margin-bottom: 40px; width: 100%; padding-bottom: 10px; }
+        .car-title { font-weight: 900; color: #000; font-size: 80px; margin: 0; white-space: nowrap; }
+        
+        /* 💡 醒目的大字价格样式 */
+        .car-price-tag { font-family: "Georgia", serif; font-weight: 900; color: #000; font-size: 72px; margin: 0; white-space: nowrap; }
 
         /* 版式 2: 复古蓝调 */
         .tpl-2 { --bg: #F0F4F8; --accent: #1A3C6E; background: var(--bg); }
@@ -43,8 +55,13 @@
         .tpl-2 .deco-strip { height: 80px; width: 100%; border-bottom: 4px solid var(--accent); display: flex; align-items: center; justify-content: space-between; padding: 0 60px; box-sizing: border-box; font-size: 28px; font-weight: bold; color: var(--accent); }
         .tpl-2 .photo-grid { height: 800px; padding: 30px; box-sizing: border-box; background: var(--bg); }
         .tpl-2 .text-section { margin: 0 40px; padding: 50px 40px 100px 40px; border-top: 8px solid var(--accent); flex: 1; }
+        
+        /* 💡 版式 2 独有的居中醒目大价格栏 */
+        .tpl-2 .price-block-t2 { width: 100%; text-align: center; margin-bottom: 35px; padding-bottom: 25px; border-bottom: 2px dashed var(--accent); }
+        .tpl-2 .price-block-t2 b { color: var(--accent); font-size: 32px; display: block; margin-bottom: 5px; }
+        .tpl-2 .price-block-t2 span { font-family: "Georgia", serif; color: var(--accent); font-size: 85px; font-weight: 900; }
 
-        /* 版式 2 专用：标签蓝 大，内容黑 小 */
+        /* 版式 2 专用 */
         .tpl-2 .info-item b { color: var(--accent); font-size: 32px; display: block; margin-bottom: 12px; }
         .tpl-2 .info-item span { color: #000; font-size: 38px; font-weight: 700; display: block; line-height: 1.4; word-break: break-all; }
 
@@ -78,6 +95,11 @@
         <select id="carSel" onchange="updateUI()">
             <option value="">-- 选择车型 (共20款) --</option>
         </select>
+        
+        <div class="price-input-wrapper">
+            <input type="text" id="priceIn" value="¥25,000 / 日" placeholder="手动输入每日租金或特惠活动价格" oninput="updatePriceUI()">
+        </div>
+
         <div class="btn-row">
             <div class="btn btn-up" onclick="document.getElementById('fileIn').click()">📸 传图</div>
             <div class="btn btn-dl" onclick="process()">✨ 生成高清海报</div>
@@ -91,7 +113,14 @@
             <div class="deco-strip" style="display:none"><span>MZ.AUTO RENTAL</span><span>OSAKA JAPAN</span></div>
             <div class="photo-grid" id="pg-p"></div>
             <div class="text-section">
-                <div class="car-title" id="t-p">MODEL</div>
+                <div class="title-row" id="tr-p">
+                    <div class="car-title" id="t-p">MODEL</div>
+                    <div class="car-price-tag" id="pr-p">¥25,000 / 日</div>
+                </div>
+                <div class="price-block-t2" id="pb-p" style="display:none">
+                    <b>DAILY RENTAL / 每日租金</b>
+                    <span id="pr-t2-p">¥25,000 / 日</span>
+                </div>
                 <div class="info-grid">
                     <div class="info-item"><b>建议人数</b><span id="p-p">-</span></div>
                     <div class="info-item"><b>性能特点</b><span id="l-p">-</span></div>
@@ -108,7 +137,14 @@
         <div class="deco-strip" style="display:none"><span>MZ.AUTO CAR RENTAL</span><span>OSAKA JAPAN</span></div>
         <div class="photo-grid" id="pg-w"></div>
         <div class="text-section">
-            <div class="car-title" id="t-w">MODEL</div>
+            <div class="title-row" id="tr-w">
+                <div class="car-title" id="t-w">MODEL</div>
+                <div class="car-price-tag" id="pr-w">¥25,000 / 日</div>
+            </div>
+            <div class="price-block-t2" id="pb-w" style="display:none">
+                <b>DAILY RENTAL / 每日租金</b>
+                <span id="pr-t2-w">¥25,000 / 日</span>
+            </div>
             <div class="info-grid">
                 <div class="info-item"><b>建议人数 / GUESTS</b><span id="p-w">-</span></div>
                 <div class="info-item"><b>性能特点 / FEATURES</b><span id="l-w">-</span></div>
@@ -141,7 +177,7 @@
             {id:"LEXUS LM", p:"4人", l:"顶级 4 座布局，车载冰箱。", c:"28寸×4", d:"专为极致高端商务需求设计。"},
             {id:"LEXUS RX", p:"4-5人", l:"豪华 SUV，内饰做工细腻。", c:"28寸×2 + 20寸×2", d:"驾驶视野极佳，品牌认可度高。"},
             {id:"BMW 5 SERIES TOURING", p:"4-5人", l:"旅行车身，操控精准。", c:"28寸×2 + 24寸×2", d:"后备箱开口大，品味自驾首选。"},
-            {id:"BENZ C-CLASS ESTATE", p:"2-4人", l:"优雅旅行版，转向轻盈。", c:"28寸×2", d:"适合 2-3 人携带少量大行李。"},
+            {id:"BENZ C-CLASS ESTATE", p:"2-4人", l:"优雅旅行版，转向轻盈。", c:"28寸×2", d:"适合 2-3 人携带少量大行李. "},
             {id:"TOYOTA HIACE 9座", p:"9人", l:"2.8T 柴油，最强利用率。", c:"28寸×8", d:"大团队、滑雪、高尔夫团唯一选择。"},
             {id:"TOYOTA NOAH", p:"6-7人", l:"混动系统，低地台设计。", c:"28寸×3", d:"实用型 MPV，适合家庭自由行。"},
             {id:"TOYOTA VOXY", p:"6-7人", l:"外观犀利，LED 大灯。", c:"28寸×3", d:"侧滑门方便，适合亲子旅行。"},
@@ -174,6 +210,14 @@
             });
         }
 
+        function updatePriceUI() {
+            const priceVal = document.getElementById('priceIn').value;
+            document.getElementById('pr-p').innerText = priceVal;
+            document.getElementById('pr-w').innerText = priceVal;
+            document.getElementById('pr-t2-p').innerText = priceVal;
+            document.getElementById('pr-t2-w').innerText = priceVal;
+        }
+
         function loadImgs(input) {
             const files = Array.from(input.files);
             ['pg-p', 'pg-w'].forEach(gridId => {
@@ -198,15 +242,33 @@
             const lab = document.getElementById('render-lab');
             const pre = document.getElementById('preview-box');
             const idx = Math.floor(Math.random() * 3) + 1;
+            
             [lab, pre].forEach(el => {
                 el.classList.remove('tpl-1', 'tpl-2', 'tpl-3');
                 el.classList.add('tpl-' + idx);
                 const isT2 = (idx === 2);
                 el.querySelectorAll('.top-header, .deco-strip').forEach(sub => sub.style.display = isT2 ? 'flex' : 'none');
-                const carT = el.querySelector('.text-section .car-title');
-                if(carT) carT.style.display = isT2 ? 'none' : 'block';
+                
+                const titleRow = el.querySelector('.text-section .title-row');
+                const priceBlockT2 = el.querySelector('.text-section .price-block-t2');
+                
+                if (isT2) {
+                    if(titleRow) titleRow.style.display = 'none';
+                    if(priceBlockT2) priceBlockT2.style.display = 'block';
+                } else {
+                    if(titleRow) titleRow.style.display = 'flex';
+                    if(priceBlockT2) priceBlockT2.style.display = 'none';
+                }
             });
-            html2canvas(lab, { scale: 1, useCORS: true, width: 1200, height: 1600 }).then(canvas => {
+            
+            // 完美规避本地渲染及 CORS 报错，确保高清无损导出
+            html2canvas(lab, { 
+                scale: 1, 
+                useCORS: true, 
+                allowTaint: true,
+                width: 1200, 
+                height: 1600 
+            }).then(canvas => {
                 document.getElementById('res-img').src = canvas.toDataURL("image/png", 1.0);
                 document.getElementById('overlay').style.display = "flex";
             });
