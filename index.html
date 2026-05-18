@@ -40,7 +40,7 @@
         .photo-grid { width: 100%; height: 1050px; display: grid; gap: 4px; background: #F8F8F8; overflow: hidden; }
         .photo-cell { width: 100%; height: 100%; background-position: center; background-size: cover; background-repeat: no-repeat; }
         
-        /* 模板 1 & 3 默认价格标签 (暖色高光) */
+        /* 模板 1 & 3 默认价格标签 (原有的橘金色高光) */
         .image-price-badge {
             position: absolute; right: 40px; bottom: 40px;
             background: rgba(228, 149, 54, 0.96); padding: 18px 45px; border-radius: 50px;
@@ -60,54 +60,52 @@
         .info-item span { display: block; font-size: 38px; font-weight: 700; color: #000; line-height: 1.4; word-break: break-all; }
 
         /* ==========================================
-           🔥 核心进化：全新重组的模板 2 (JDM 赛车杂志风) 
+           🔥 核心重置：全新进化的模板 2 (硬核赛车杂志风) 
            ========================================== */
-        .tpl-2 { background: #111111; } /* 改为深色底色基调 */
+        .tpl-2 { background: #111111; } 
         
-        /* 2代专属顶部JDM杂志头罩 */
+        /* 2代专属顶部JDM杂志头罩 —— 缩小红色板块比例（600px -> 380px） */
         .tpl-2 .top-header { 
-            position: absolute; top: 0; left: 0; width: 100%; height: 600px;
+            position: absolute; top: 0; left: 0; width: 100%; height: 380px;
             background: linear-gradient(180deg, #E62326 0%, #D11B1E 100%);
-            display: flex; flex-direction: column; justify-content: flex-start; align-items: center;
-            padding-top: 50px; box-sizing: border-box; z-index: 20; overflow: hidden;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            padding: 0; box-sizing: border-box; z-index: 20; overflow: hidden;
             border-bottom: none;
         }
-        /* 2代超大背景底字：模拟 MITSUBISHI 满铺特效 */
+        /* 2代超大背景底字 —— 尺寸自适应缩小 */
         .tpl-2 .top-header .jdm-bg-text {
-            font-family: "Impact", "Arial Black", sans-serif; font-size: 260px; font-weight: 900;
-            color: rgba(0, 0, 0, 0.18); letter-spacing: -5px; line-height: 0.9;
+            font-family: "Impact", "Arial Black", sans-serif; font-size: 190px; font-weight: 900;
+            color: rgba(0, 0, 0, 0.15); letter-spacing: -3px; line-height: 0.9;
             text-align: center; text-transform: uppercase; width: 110%; word-break: break-all;
         }
-        /* 2代主车名：白色手写感斜体（叠加在红色块中央） */
+        /* 2代主车名 —— 完美居中放置于缩小的红色块中央 */
         .tpl-2 .top-header .big-title {
-            position: absolute; top: 220px; left: 50%; transform: translateX(-50%) rotate(-4deg);
-            font-family: "Georgia", "Times New Roman", serif; font-style: italic; font-size: 110px;
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-3deg);
+            font-family: "Georgia", "Times New Roman", serif; font-style: italic; font-size: 96px;
             font-weight: 900; color: #FFFFFF; text-shadow: 4px 4px 0px #000;
             white-space: nowrap; z-index: 30; text-align: center; width: 90%; overflow: hidden;
         }
-        /* 2代日语小装饰字 */
-        .tpl-2 .top-header .jdm-sub-tag-left { position: absolute; top: 60px; left: 80px; font-size: 54px; font-weight: 900; color: #FFF; letter-spacing: 2px; }
-        .tpl-2 .top-header .jdm-sub-tag-right { position: absolute; top: 440px; right: 80px; font-size: 42px; font-weight: 800; color: #FFF; letter-spacing: 1px; }
+        /* 彻底删除了 .jdm-sub-tag-left 和 .jdm-sub-tag-right（装饰日文已拿掉） */
 
-        /* 2代专属图片区域：下移并适配赛车杂志网格结构 */
-        .tpl-2 .photo-area-wrapper { margin-top: 600px; height: 500px; z-index: 10; }
-        .tpl-2 .photo-grid { height: 500px; padding: 0; background: #000; gap: 6px; }
+        /* 2代专属图片区域 —— 上移并极大增加了照片比重（500px -> 720px） */
+        .tpl-2 .photo-area-wrapper { margin-top: 380px; height: 720px; z-index: 10; }
+        .tpl-2 .photo-grid { height: 720px; padding: 0; background: #000; gap: 6px; }
         
-        /* 💡 2代价格标签完美重塑：压在主图右上角，白粗体红底 */
+        /* 💡 2代贴图价格大字显示 —— 硬核黑底红边，精准压在扩大后的主图右上角 */
         .tpl-2 .image-price-badge {
-            position: absolute; top: -140px; right: 50px; bottom: auto; left: auto;
+            position: absolute; top: 40px; right: 50px; bottom: auto; left: auto;
             background: #000000; color: #FFFFFF; border: 4px solid #E62326;
-            padding: 15px 40px; border-radius: 0px; transform: rotate(2deg);
-            font-size: 72px; box-shadow: 0 15px 30px rgba(0,0,0,0.5); z-index: 40;
+            padding: 15px 40px; border-radius: 0px; transform: rotate(1deg);
+            font-size: 72px; box-shadow: 0 15px 30px rgba(0,0,0,0.6); z-index: 40;
         }
         .tpl-2 .image-price-badge .unit-suffix { color: #E62326; font-size: 42px; font-weight: 900; margin-left: 10px; }
 
         /* 2代专属黑底文字区 */
-        .tpl-2 .text-section { background: #111111; padding: 50px 80px 80px 80px; border: none; margin: 0; }
-        .tpl-2 .text-section::before { content: "大胆な存在感"; position: absolute; top: -65px; left: 80px; color: #FFF; font-size: 42px; font-weight: 900; z-index: 30; text-shadow: 2px 2px 0px #000; }
-        .tpl-2 .title-row { display: none; } /* 隐藏原来的常规标题栏 */
+        .tpl-2 .text-section { background: #111111; padding: 60px 80px 80px 80px; border: none; margin: 0; }
+        /* 彻底删除了 text-section::before 里的 "大胆な存在感" 装饰日文 */
+        .tpl-2 .title-row { display: none; } 
         
-        /* 2代数据网格：硬核黑白配 */
+        /* 2代数据参数网格 */
         .tpl-2 .info-item b { color: #E62326; font-size: 28px; font-weight: 900; letter-spacing: 1px; border-left: 6px solid #E62326; padding-left: 15px; text-transform: uppercase; }
         .tpl-2 .info-item span { color: #FFFFFF; font-size: 34px; font-weight: 600; margin-top: 10px; }
 
@@ -115,13 +113,13 @@
         .tpl-3 { flex-direction: column-reverse !important; }
         .tpl-3 .image-price-badge { bottom: auto; top: 40px; }
 
-        /* 日期底部居中 */
+        /* 日期底部右下角小字 */
         .date-center-fixed { 
             position: absolute; bottom: 30px; left: 0; width: 100%; 
             text-align: center; font-size: 32px; font-weight: 900; color: #BBB; letter-spacing: 3px;
             z-index: 100;
         }
-        .tpl-2 .date-center-fixed { color: #555555; text-align: right; width: auto; left: auto; right: 80px; bottom: 35px; }
+        .tpl-2 .date-center-fixed { color: #444444; text-align: right; width: auto; left: auto; right: 80px; bottom: 35px; }
 
         /* 遮罩层 */
         #overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; justify-content: center; align-items: center; flex-direction: column; }
@@ -152,10 +150,8 @@
     <div id="preview-wrapper">
         <div id="preview-box" class="poster-container tpl-1">
             <div class="top-header" style="display:none">
-                <div class="jdm-sub-tag-left">三菱 ランサー</div>
                 <div class="jdm-bg-text">MZAUTO</div>
                 <div class="big-title">MODEL</div>
-                <div class="jdm-sub-tag-right">パフォーマンス</div>
             </div>
             <div class="deco-strip" style="display:none"></div>
             
@@ -183,10 +179,8 @@
 
     <div id="render-lab" class="poster-container tpl-1">
         <div class="top-header" style="display:none">
-            <div class="jdm-sub-tag-left">三菱 ランサー</div>
             <div class="jdm-bg-text">MZAUTO</div>
             <div class="big-title">MODEL</div>
-            <div class="jdm-sub-tag-right">パフォーマンス</div>
         </div>
         <div class="deco-strip" style="display:none"></div>
         
@@ -223,7 +217,7 @@
             {id:"HONDA FIT", p:"2-3人", l:"1.5L 动力，空间魔术师。", c:"24寸×2 + 20寸×2", d:"市区穿梭灵活，空间利用率极高。"},
             {id:"TOYOTA AQUA", p:"2人", l:"1.5L 混动，极其省油。", c:"24寸×2 或 20寸×3", d:"好开车好停车，适合深度游。"},
             {id:"TOYOTA YARIS", p:"2人", l:"1.5L 动力，操控灵活。", c:"24寸×1 + 20寸×2", d:"安全配置高，适合轻便出行。"},
-            {id:"NISSAN NOTE", p:"2-3人", l:"e-POWER 电驱，加速平顺。", c:"24寸×2 + 20寸×1", d:"电机驱动响应快，行车静谧。"},
+            {id:"NISSAN NOTE", p:"2-3人", l:"e-POWER 电驱，加速平顺。", c:"24寸×2 + 20寸×1", d:"电机驱动响应快，行车静谧. "},
             {id:"TOYOTA GR YARIS", p:"1-2人", l:"1.6T 四驱，WRC 拉力基因。", c:"20寸×2", d:"纯性能钢炮，不建议带大件行李。"},
             {id:"ALPHARD 3代 黄金版", p:"6-7人", l:"2.5L/3.5L，豪华航空座椅。", c:"28寸×4 或 20寸×8", d:"接送机明星，5人状态时行李最充裕。"},
             {id:"ALPHARD 3代 SC版", p:"6-7人", l:"高配版，内饰质感更佳。", c:"28寸×4 或 20寸×8", d:"大阪/京都明星车型，极致舒适。"},
